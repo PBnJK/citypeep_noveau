@@ -1,0 +1,11 @@
+*.o
+*.obj
+
+*.dep
+*.elf
+
+*.lib
+
+*.psx
+
+psyq/
