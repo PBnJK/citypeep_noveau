@@ -11,14 +11,20 @@
 
 #define PACKET_LENGTH 32768
 
+/* Triangle (3) mesh */
 typedef struct {
-	POLY_F3 *prim; /* Poly F3 primtive */
+	int vcount;
+	SVECTOR *verts;
+	int fcount;
+	SVECTOR *faces;
+} CP_M3;
 
+typedef struct {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
 
-	SVECTOR data[3]; /* TEMP */
+	CP_M3 data;
 	MATRIX mat; /* per object? */
 } CP_PolyF3;
 
@@ -28,6 +34,6 @@ void gfxInit(void);
 void gfxPrepare(void);
 void gfxDisplay(void);
 
-void gfxDrawPolyF3(CP_PolyF3 *poly);
+CP_M3 gfxLoadM3(const char *PATH);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

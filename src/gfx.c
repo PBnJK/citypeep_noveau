@@ -13,6 +13,8 @@
 #include "cpu_macros.h"
 
 #include "common.h"
+#include "malloc.h"
+#include "system.h"
 
 #include "gfx.h"
 
@@ -20,12 +22,12 @@ DISPENV disp[2];
 DRAWENV draw[2];
 
 static u_long ot[2][OT_LENGTH] = { { 0 } };
-static char primbuff[2][PACKET_LENGTH] = { 0 };
+static char polyf3buff[2][PACKET_LENGTH] = { 0 };
 
 static volatile u_char activeBuffer = 0;
-static char *nextPrimitive = primbuff[0];
+static char *nextPrimitive = polyf3buff[0];
 
-// D-Cache (ScratchPad) setup
+/* D-Cache (ScratchPad) setup */
 #define dc_camdirp ((sshort *)getScratchAddr(0))
 #define dc_ip ((uchar *)getScratchAddr(1))
 #define dc_opzp ((slong *)getScratchAddr(2))
@@ -33,6 +35,7 @@ static char *nextPrimitive = primbuff[0];
 #define dc_cmatp ((MATRIX *)getScratchAddr(9))
 #define dc_sxytbl ((DVECTOR *)getScratchAddr(15))
 
+/* Static variable */
 register ulong ur0 asm("$16");
 register ulong ur1 asm("$17");
 register ulong ur2 asm("$18");
@@ -40,17 +43,23 @@ register ulong ur3 asm("$19");
 register ulong ur4 asm("$20");
 register ulong ur5 asm("$21");
 
+/* Model info */
+long p, flag, otz;
+
+static POLY_F3 *polyf3;
+static POLY_FT3 *polyft3;
+
 void gfxCheckRegion(void) {
 	/* This string changes depending on the system region! */
 	const char *SCEE_STRING_ADRESS = (char *)0xbfc7ff52;
 	if( *SCEE_STRING_ADRESS == 'E' ) {
-		LOG("PAL detected;");
+		LOG("(PAL detected)\n");
 
 		SetVideoMode(MODE_PAL);
 		gSCR_HEIGHT = 256;
 		gSCR_CENTER_HEIGHT = gSCR_HEIGHT >> 1;
 	} else {
-		LOG("* * NTSC detected;");
+		LOG("(NTSC detected)\n");
 		SetVideoMode(MODE_NTSC);
 	}
 }
@@ -97,7 +106,7 @@ void gfxInit(void) {
 
 void gfxPrepare(void) {
 	activeBuffer ^= 1;
-	nextPrimitive = primbuff[activeBuffer];
+	nextPrimitive = polyf3buff[activeBuffer];
 
 	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 }
@@ -117,12 +126,44 @@ void gfxDisplay(void) {
 	DrawOTag(&ot[activeBuffer][OT_LENGTH - 1]);
 }
 
-void gfxDrawPolyF3(CP_PolyF3 *poly) {
-	long p, flag, otz;
-	poly->prim = (POLY_F3 *)nextPrimitive;
+CP_M3 gfxLoadM3(const char *PATH) {
+	CP_M3 mesh3 = { 0 };
+	int i = 0;
 
-	poly->rot.vy += 4;
-	poly->rot.vz += 4;
+	u_long *loaded = sysLoadFileFromCD(PATH);
+	u_long *data = loaded;
+
+	mesh3.vcount = *data++;
+	mesh3.fcount = *data++;
+
+	mesh3.verts = malloc3(mesh3.vcount * 3);
+	mesh3.faces = malloc3(mesh3.fcount * 3);
+
+	for( ; i < mesh3.vcount; ++i ) {
+		mesh3.verts[i].vx = (*data) & 0xFF;
+		mesh3.verts[i].vy = (*data++) >> 16;
+		mesh3.verts[i].vz = (*data) & 0xFF;
+
+		mesh3.verts[++i].vx = (*data++) >> 16;
+		mesh3.verts[i].vy = (*data) & 0xFF;
+		mesh3.verts[i].vz = (*data++) >> 16;
+	}
+
+	for( i = 0; i < mesh3.fcount; ++i ) {
+		mesh3.faces[i].vx = (*data) & 0xFF;
+		mesh3.faces[i].vy = (*data++) >> 16;
+		mesh3.faces[i].vz = (*data) & 0xFF;
+
+		mesh3.faces[++i].vx = (*data++) >> 16;
+		mesh3.faces[i].vy = (*data) & 0xFF;
+		mesh3.faces[i].vz = (*data++) >> 16;
+	}
+
+	return mesh3;
+}
+
+void gfxDrawPolyF3(CP_PolyF3 *poly) {
+	polyf3 = (POLY_F3 *)nextPrimitive;
 
 	RotMatrix_gte(&poly->rot, &poly->mat);
 	TransMatrix(&poly->mat, &poly->trans);
@@ -130,13 +171,6 @@ void gfxDrawPolyF3(CP_PolyF3 *poly) {
 
 	gte_SetRotMatrix(&poly->mat);
 	gte_SetTransMatrix(&poly->mat);
-
-	cpu_ldr(ur0, (u_long *)&poly->data[0].vx); /* Place vx & vy into ur0 */
-	cpu_ldr(ur1, (u_long *)&poly->data[0].vz); /* Place vz & pad into ur1 */
-	cpu_ldr(ur2, (u_long *)&poly->data[1].vx); /* Repeat... */
-	cpu_ldr(ur3, (u_long *)&poly->data[1].vz);
-	cpu_ldr(ur4, (u_long *)&poly->data[2].vx);
-	cpu_ldr(ur5, (u_long *)&poly->data[2].vz);
 
 	cpu_gted0(ur0); /* Transfer from CPU to GTE */
 	cpu_gted1(ur1);
@@ -155,13 +189,12 @@ void gfxDrawPolyF3(CP_PolyF3 *poly) {
 	gte_stflg(&flag);
 	gte_stszotz(&otz);
 
-	*(unsigned long long *)&poly->prim->x0
-		= *(unsigned long long *)&dc_sxytbl[0];
-	*(ulong *)&poly->prim->x2 = *(ulong *)&dc_sxytbl[2];
+	*(unsigned long long *)&polyf3->x0 = *(unsigned long long *)&dc_sxytbl[0];
+	*(ulong *)&polyf3->x2 = *(ulong *)&dc_sxytbl[2];
 
-	setPolyF3(poly->prim);
-	setRGB0(poly->prim, 255, 255, 0);
+	setPolyF3(polyf3);
+	setRGB0(polyf3, 255, 255, 0);
 
-	addPrim(ot[activeBuffer], poly->prim);
-	nextPrimitive += sizeof(*poly->prim);
+	addPrim(ot[activeBuffer], &polyf3);
+	nextPrimitive += sizeof(*polyf3);
 }

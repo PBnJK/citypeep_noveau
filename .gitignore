@@ -8,6 +8,9 @@
 
 *.psx
 
+font/
+model/
 psyq/
+sprite/
 
 .cache/

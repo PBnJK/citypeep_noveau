@@ -4,7 +4,7 @@
 #include <sys/types.h>
 
 #ifdef DEBUG
-#define LOG(...) printf(__VA_ARGS__)
+#define LOG(F, ...) printf(F, ##__VA_ARGS__)
 #else
 #define LOG(...)
 #endif // DEBUG

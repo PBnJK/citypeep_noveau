@@ -1,0 +1,46 @@
+Models:
+
+Things are sized like this:
+VECTOR:  int   int   int   PADDING
+SVECTOR: short short short PADDING
+CVECTOR: char  char  char  PADDING
+
+Rotation:    SVECTOR
+Translation: VECTOR
+Scale:       VECTOR
+Vertices:    SVECTOR
+
+GTE works like this:
+Rot -> Trans -> Scale -> Vertices -> RTPT
+
+Flat, textureless meshes are stored like this (.MF):
+
+0       7       15      23      31
+├───────┴───────┴───────┴───────┤
+│ Number of vertices (Nv)       │
+├───────────────────────────────┤
+│ Number of faces (Nf)          │
+├───────────────┬───────────────┤
+│     V0.0      │     V0.1      │
+├───────────────┼───────────────┤
+│     V0.3      │     V1.0      │
+├───────────────┼───────────────┤
+│     V1.1      │     V1.1      │
+├───────────────┴───────────────┤
+│            ..., Nv            │
+├───────────────┬───────────────┤
+│     F0.0      │     F0.1      │
+├───────────────┼───────────────┤
+│     F0.3      │     F1.0      │
+├───────────────┼───────────────┤
+│     F1.1      │     F1.1      │
+├───────────────┴───────────────┤
+│            ..., Nf            │
+└───────────────────────────────┘
+
+32 bit > Nv
+16 bit > Verts
+32 bit > Nf
+16 bit > Faces
+
+Textured meshes are stored like this (.MT):
