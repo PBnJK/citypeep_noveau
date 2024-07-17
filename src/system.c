@@ -24,6 +24,7 @@ u_char sysInit(void) {
 	InitHeap3((void *)0x800F8000, 0x00100000);
 	LOG("Success!\n");
 
+	LOG("* Initializing graphics... ");
 	gfxInit();
 	LOG("Success!\n");
 
