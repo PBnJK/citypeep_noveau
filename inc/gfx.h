@@ -12,15 +12,15 @@
 #define PACKET_LENGTH 32768
 
 typedef struct {
-	POLY_F4 *prim; /* Poly F4 primtive */
+	POLY_F3 *prim; /* Poly F3 primtive */
 
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
 
-	SVECTOR data[4]; /* TEMP */
+	SVECTOR data[3]; /* TEMP */
 	MATRIX mat; /* per object? */
-} CP_PolyF4;
+} CP_PolyF3;
 
 void gfxCheckRegion(void);
 void gfxInit(void);
@@ -28,6 +28,6 @@ void gfxInit(void);
 void gfxPrepare(void);
 void gfxDisplay(void);
 
-void gfxDrawPolyF4(CP_PolyF4 *poly);
+void gfxDrawPolyF3(CP_PolyF3 *poly);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

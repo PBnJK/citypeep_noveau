@@ -12,19 +12,18 @@
 #include "gfx.h"
 
 int main(void) {
-	CP_PolyF4 p4 = { .prim = 0,
+	CP_PolyF3 p3 = { .prim = 0,
 		.rot = { 0, 0, 0 },
 		.trans = { 0, 0, 0, 0 },
 		.scale = { ONE, ONE, ONE },
-		.data
-		= { { -32, -32, 1 }, { -32, 32, 1 }, { 32, -32, 1 }, { 32, 32, 1 } },
+		.data = { { 0, -32, 0, 0 }, { 32, 0, 0, 0 }, { -32, -0, 0, 0 } },
 		.mat = { 0 } };
 
 	gfxCheckRegion();
 
 	LOG("=== GAME ENTERED ===\n");
 	sysInit();
-	p4.trans.vz = gSCR_CENTER_WIDTH;
+	p3.trans.vz = gSCR_CENTER_WIDTH;
 
 	while( 1 ) {
 		gfxPrepare();
@@ -32,7 +31,7 @@ int main(void) {
 		FntPrint("\n\nHello poly!");
 		FntFlush(-1);
 
-		gfxDrawPolyF4(&p4);
+		gfxDrawPolyF3(&p3);
 
 		gfxDisplay();
 	}
