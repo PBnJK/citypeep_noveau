@@ -1,0 +1,35 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/mipsel-linux-gnu-gcc",
+      "-I/home/pedrob/projects/citypeep/thirdparty/nugget/psyq/include",
+      "-I/home/pedrob/projects/citypeep/psyq/include",
+      "-I/home/pedrob/projects/citypeep/inc",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-mno-gpopt",
+      "-fomit-frame-pointer",
+      "-fno-builtin",
+      "-fno-strict-aliasing",
+      "-Wno-attributes",
+      "-march=mips1",
+      "-mabi=32",
+      "-EL",
+      "-fno-pic",
+      "-mno-abicalls",
+      "-mfp32",
+      "-fno-stack-protector",
+      "-ffreestanding",
+      "-I/home/pedrob/projects/citypeep/thirdparty/nugget/",
+      "-g",
+      "-Os",
+      "-c",
+      "-o",
+      "main.o",
+      "main.c"
+    ],
+    "directory": "/home/pedrob/projects/citypeep/src",
+    "file": "/home/pedrob/projects/citypeep/src/main.c",
+    "output": "/home/pedrob/projects/citypeep/src/main.o"
+  }
+]

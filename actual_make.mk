@@ -11,6 +11,8 @@ SRCS += $(CURRDIR)thirdparty/nugget/common/syscalls/printf.s
 # Compiler flags
 CPPFLAGS += -I$(CURRDIR)thirdparty/nugget/psyq/include
 CPPFLAGS += -I$(CURRDIR)psyq/include
+CPPFLAGS += -I$(CURRDIR)inc
+CPPFLAGS += -DDEBUG
 
 # Linker flags
 LDFLAGS += -L$(CURRDIR)thirdparty/nugget/psyq/lib
