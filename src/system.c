@@ -39,11 +39,11 @@ u_long *sysLoadFileFromCD(const char *FILENAME) {
 	CdlFILE fsFile;
 	u_long *buffer;
 
-	LOG("Reading file '%s'...\n", FILENAME);
+	LOG("Reading file '%s'... ", FILENAME);
 
 	/* Search for file, if found: put "address" on fsFile */
 	if( !CdSearchFile(&fsFile, (char *)FILENAME) ) {
-		LOG("Error! File '%s' was not found on CD.\n", FILENAME);
+		LOG("NOT FOUND!\n");
 		return 0;
 	}
 
@@ -54,10 +54,7 @@ u_long *sysLoadFileFromCD(const char *FILENAME) {
 	CdRead((int)CALC_SECTOR_SIZE(fsFile.size), buffer, CdlModeSpeed);
 
 	/* Wait for read to finish (CdRead is non-blocking) */
-	(CdReadSync(0, 0) == 0)
-		? LOG("SUCCESS -- Read file '%s' successfully!\n\n", FILENAME)
-		: LOG("FAILURE -- Failed to read file '%s' ...\n\n", FILENAME);
+	(CdReadSync(0, 0) == 0) ? LOG("SUCCESS!\n\n") : LOG("FAILURE!\n\n");
 
-	LOG("done baby!\n");
 	return buffer;
 }

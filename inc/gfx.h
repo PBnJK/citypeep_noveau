@@ -35,5 +35,6 @@ void gfxPrepare(void);
 void gfxDisplay(void);
 
 CP_M3 gfxLoadM3(const char *PATH);
+void gfxDrawPolyF3(CP_PolyF3 *poly);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

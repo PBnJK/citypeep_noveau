@@ -163,8 +163,6 @@ CP_M3 gfxLoadM3(const char *PATH) {
 }
 
 void gfxDrawPolyF3(CP_PolyF3 *poly) {
-	polyf3 = (POLY_F3 *)nextPrimitive;
-
 	RotMatrix_gte(&poly->rot, &poly->mat);
 	TransMatrix(&poly->mat, &poly->trans);
 	ScaleMatrix(&poly->mat, &poly->scale);
@@ -172,29 +170,42 @@ void gfxDrawPolyF3(CP_PolyF3 *poly) {
 	gte_SetRotMatrix(&poly->mat);
 	gte_SetTransMatrix(&poly->mat);
 
-	cpu_gted0(ur0); /* Transfer from CPU to GTE */
-	cpu_gted1(ur1);
-	cpu_gted2(ur2);
-	cpu_gted3(ur3);
-	cpu_gted4(ur4);
-	cpu_gted5(ur5);
+	for( int i = 0; i < poly->data.fcount; ++i ) {
+		polyf3 = (POLY_F3 *)nextPrimitive;
 
-	/* Start RotTransPers of triangle */
-	gte_rtpt();
+		cpu_ldr(ur0, (u_long *)&poly->data.verts[poly->data.faces[i].vx].vx);
+		cpu_ldr(ur1, (u_long *)&poly->data.verts[poly->data.faces[i].vx].vz);
+		cpu_ldr(ur2, (u_long *)&poly->data.verts[poly->data.faces[i].vy].vx);
+		cpu_ldr(ur3, (u_long *)&poly->data.verts[poly->data.faces[i].vy].vz);
+		cpu_ldr(ur4, (u_long *)&poly->data.verts[poly->data.faces[i].vz].vx);
+		cpu_ldr(ur5, (u_long *)&poly->data.verts[poly->data.faces[i].vz].vz);
 
-	gte_nclip();
-	gte_stsxy3c(&dc_sxytbl[0]);
+		cpu_gted0(ur0); /* Transfer from CPU to GTE */
+		cpu_gted1(ur1);
+		cpu_gted2(ur2);
+		cpu_gted3(ur3);
+		cpu_gted4(ur4);
+		cpu_gted5(ur5);
 
-	gte_stdp(&p);
-	gte_stflg(&flag);
-	gte_stszotz(&otz);
+		/* Start RotTransPers of triangle */
+		gte_rtpt();
 
-	*(unsigned long long *)&polyf3->x0 = *(unsigned long long *)&dc_sxytbl[0];
-	*(ulong *)&polyf3->x2 = *(ulong *)&dc_sxytbl[2];
+		gte_nclip();
+		gte_stsxy3c(&dc_sxytbl[0]);
 
-	setPolyF3(polyf3);
-	setRGB0(polyf3, 255, 255, 0);
+		gte_stdp(&p);
+		gte_stflg(&flag);
+		gte_stszotz(&otz);
 
-	addPrim(ot[activeBuffer], &polyf3);
-	nextPrimitive += sizeof(*polyf3);
+		*(unsigned long long *)&polyf3->x0
+			= *(unsigned long long *)&dc_sxytbl[0];
+		*(u_long *)&polyf3->x2 = *(u_long *)&dc_sxytbl[2];
+
+		setPolyF3(polyf3);
+		setRGB0(polyf3, 255, 255, 0);
+
+		AddPrim(&ot[activeBuffer][otz - 2], &polyf3);
+
+		nextPrimitive += sizeof(*polyf3);
+	}
 }
