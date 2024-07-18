@@ -6,9 +6,7 @@
 #include <libgte.h>
 #include <libgpu.h>
 
-#define OT_LENGTH 8
-#define OFFSET_OT_LENGTH 14 - OT_LENGTH
-
+#define OT_LENGTH 1024
 #define PACKET_LENGTH 32768
 
 /* Triangle (3) mesh */
@@ -34,7 +32,7 @@ void gfxInit(void);
 void gfxPrepare(void);
 void gfxDisplay(void);
 
-CP_M3 gfxLoadM3(const char *PATH);
+void gfxLoadM3(const char *PATH, CP_M3 *mesh3);
 void gfxDrawPolyF3(CP_PolyF3 *poly);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

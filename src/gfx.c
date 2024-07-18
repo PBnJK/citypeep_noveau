@@ -18,36 +18,25 @@
 
 #include "gfx.h"
 
+#define CLIP_LEFT 1
+#define CLIP_RIGHT 2
+#define CLIP_UP 4
+#define CLIP_DOWN 8
+
 DISPENV disp[2];
 DRAWENV draw[2];
 
 static u_long ot[2][OT_LENGTH] = { { 0 } };
-static char polyf3buff[2][PACKET_LENGTH] = { 0 };
+static char primbuff[2][PACKET_LENGTH] = { 0 };
 
 static volatile u_char activeBuffer = 0;
-static char *nextPrimitive = polyf3buff[0];
+static char *nextPrimitive = primbuff[0];
 
-/* D-Cache (ScratchPad) setup */
-#define dc_camdirp ((sshort *)getScratchAddr(0))
-#define dc_ip ((uchar *)getScratchAddr(1))
-#define dc_opzp ((slong *)getScratchAddr(2))
-#define dc_wmatp ((MATRIX *)getScratchAddr(3))
-#define dc_cmatp ((MATRIX *)getScratchAddr(9))
-#define dc_sxytbl ((DVECTOR *)getScratchAddr(15))
+RECT screen = { 0 };
 
-/* Static variable */
-register ulong ur0 asm("$16");
-register ulong ur1 asm("$17");
-register ulong ur2 asm("$18");
-register ulong ur3 asm("$19");
-register ulong ur4 asm("$20");
-register ulong ur5 asm("$21");
+long gteResult;
 
-/* Model info */
-long p, flag, otz;
-
-static POLY_F3 *polyf3;
-static POLY_FT3 *polyft3;
+POLY_F3 *polyf3 = { 0 };
 
 void gfxCheckRegion(void) {
 	/* This string changes depending on the system region! */
@@ -69,14 +58,10 @@ void gfxInit(void) {
 	ResetGraph(0);
 	SetGraphDebug(0);
 
-	/* Set offset & projection */
-	gte_SetGeomOffset(gSCR_CENTER_WIDTH, gSCR_CENTER_HEIGHT);
-	gte_SetGeomScreen(gSCR_CENTER_WIDTH);
-
 	/* Initialize contents of disp & draw environments */
 	SetDefDispEnv(&disp[0], 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
-	SetDefDispEnv(&disp[1], 0, gSCR_HEIGHT, gSCR_WIDTH, gSCR_HEIGHT);
 	SetDefDrawEnv(&draw[0], 0, gSCR_HEIGHT, gSCR_WIDTH, gSCR_HEIGHT);
+	SetDefDispEnv(&disp[1], 0, gSCR_HEIGHT, gSCR_WIDTH, gSCR_HEIGHT);
 	SetDefDrawEnv(&draw[1], 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
 
 	if( GetVideoMode() == MODE_PAL ) {
@@ -90,25 +75,28 @@ void gfxInit(void) {
 	/* Set clear color and ensure that the background is cleared */
 	setRGB0(&draw[0], 50, 60, 70);
 	draw[0].isbg = 1;
+	draw[0].dtd = 1;
 
 	setRGB0(&draw[1], 50, 60, 70);
 	draw[1].isbg = 1;
+	draw[1].dtd = 1;
 
 	/* Set current disp & draw environments */
 	PutDispEnv(&disp[activeBuffer]);
 	PutDrawEnv(&draw[activeBuffer]);
 
+	nextPrimitive = primbuff[activeBuffer];
+
+	setRECT(&screen, 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
+
+	InitGeom();
+	gte_SetGeomOffset(gSCR_CENTER_WIDTH, gSCR_CENTER_HEIGHT);
+	gte_SetGeomScreen(gSCR_CENTER_WIDTH);
+
 #ifdef DEBUG
 	FntLoad(960, 0);
 	FntOpen(0, 0, gSCR_WIDTH, gSCR_HEIGHT, 0, 256);
 #endif
-}
-
-void gfxPrepare(void) {
-	activeBuffer ^= 1;
-	nextPrimitive = polyf3buff[activeBuffer];
-
-	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 }
 
 void gfxDisplay(void) {
@@ -122,44 +110,89 @@ void gfxDisplay(void) {
 	PutDispEnv(&disp[activeBuffer]);
 	PutDrawEnv(&draw[activeBuffer]);
 
+	SetDispMask(1);
+
 	/* Draw contents of ordering table */
-	DrawOTag(&ot[activeBuffer][OT_LENGTH - 1]);
+	DrawOTag(ot[activeBuffer] + OT_LENGTH - 1);
+
+	activeBuffer ^= 1;
+	nextPrimitive = primbuff[activeBuffer];
+
+	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 }
 
-CP_M3 gfxLoadM3(const char *PATH) {
-	CP_M3 mesh3 = { 0 };
+void gfxLoadM3(const char *PATH, CP_M3 *mesh3) {
 	int i = 0;
 
 	u_long *loaded = sysLoadFileFromCD(PATH);
 	u_long *data = loaded;
 
-	mesh3.vcount = *data++;
-	mesh3.fcount = *data++;
+	mesh3->vcount = *data++;
+	mesh3->fcount = *data++;
 
-	mesh3.verts = malloc3(mesh3.vcount * 3);
-	mesh3.faces = malloc3(mesh3.fcount * 3);
+	mesh3->verts = malloc3(mesh3->vcount * sizeof(*mesh3->verts));
+	mesh3->faces = malloc3(mesh3->fcount * sizeof(*mesh3->faces));
 
-	for( ; i < mesh3.vcount; ++i ) {
-		mesh3.verts[i].vx = (*data) & 0xFF;
-		mesh3.verts[i].vy = (*data++) >> 16;
-		mesh3.verts[i].vz = (*data) & 0xFF;
+	for( ; i < mesh3->vcount; ++i ) {
+		mesh3->verts[i].vx = (int)((*data) & 0xFF);
+		mesh3->verts[i].vy = (int)((*data++) >> 16);
+		mesh3->verts[i].vz = (int)((*data) & 0xFF);
 
-		mesh3.verts[++i].vx = (*data++) >> 16;
-		mesh3.verts[i].vy = (*data) & 0xFF;
-		mesh3.verts[i].vz = (*data++) >> 16;
+		mesh3->verts[++i].vx = (int)((*data++) >> 16);
+		mesh3->verts[i].vy = (int)((*data) & 0xFF);
+		mesh3->verts[i].vz = (int)((*data++) >> 16);
 	}
 
-	for( i = 0; i < mesh3.fcount; ++i ) {
-		mesh3.faces[i].vx = (*data) & 0xFF;
-		mesh3.faces[i].vy = (*data++) >> 16;
-		mesh3.faces[i].vz = (*data) & 0xFF;
+	for( i = 0; i < mesh3->fcount; ++i ) {
+		mesh3->faces[i].vx = (*data) & 0xFF;
+		mesh3->faces[i].vy = (*data++) >> 16;
+		mesh3->faces[i].vz = (*data) & 0xFF;
 
-		mesh3.faces[++i].vx = (*data++) >> 16;
-		mesh3.faces[i].vy = (*data) & 0xFF;
-		mesh3.faces[i].vz = (*data++) >> 16;
+		mesh3->faces[++i].vx = (*data++) >> 16;
+		mesh3->faces[i].vy = (*data) & 0xFF;
+		mesh3->faces[i].vz = (*data++) >> 16;
+	}
+}
+
+static short _testClip(short x, short y) {
+	short result = 0;
+
+	if( x < screen.x ) {
+		result |= CLIP_LEFT;
 	}
 
-	return mesh3;
+	if( x >= (screen.x + (screen.w - 1)) ) {
+		result |= CLIP_RIGHT;
+	}
+
+	if( y < screen.y ) {
+		result |= CLIP_UP;
+	}
+
+	if( y >= (screen.y + (screen.h - 1)) ) {
+		result |= CLIP_DOWN;
+	}
+
+	return result;
+}
+
+static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
+	short c[3] = { _testClip(v0->vx, v0->vy), _testClip(v1->vx, v1->vy),
+		_testClip(v2->vx, v2->vy) };
+
+	if( (c[0] & c[1]) == 0 ) {
+		return 0;
+	}
+
+	if( (c[1] & c[2]) == 0 ) {
+		return 0;
+	}
+
+	if( (c[2] & c[0]) == 0 ) {
+		return 0;
+	}
+
+	return 1;
 }
 
 void gfxDrawPolyF3(CP_PolyF3 *poly) {
@@ -170,42 +203,46 @@ void gfxDrawPolyF3(CP_PolyF3 *poly) {
 	gte_SetRotMatrix(&poly->mat);
 	gte_SetTransMatrix(&poly->mat);
 
+	poly->rot.vy += 8;
+	poly->rot.vz += 8;
+
+	polyf3 = (POLY_F3 *)nextPrimitive;
+
 	for( int i = 0; i < poly->data.fcount; ++i ) {
-		polyf3 = (POLY_F3 *)nextPrimitive;
-
-		cpu_ldr(ur0, (u_long *)&poly->data.verts[poly->data.faces[i].vx].vx);
-		cpu_ldr(ur1, (u_long *)&poly->data.verts[poly->data.faces[i].vx].vz);
-		cpu_ldr(ur2, (u_long *)&poly->data.verts[poly->data.faces[i].vy].vx);
-		cpu_ldr(ur3, (u_long *)&poly->data.verts[poly->data.faces[i].vy].vz);
-		cpu_ldr(ur4, (u_long *)&poly->data.verts[poly->data.faces[i].vz].vx);
-		cpu_ldr(ur5, (u_long *)&poly->data.verts[poly->data.faces[i].vz].vz);
-
-		cpu_gted0(ur0); /* Transfer from CPU to GTE */
-		cpu_gted1(ur1);
-		cpu_gted2(ur2);
-		cpu_gted3(ur3);
-		cpu_gted4(ur4);
-		cpu_gted5(ur5);
+		gte_ldv3(&poly->data.verts[poly->data.faces[i].vx],
+			&poly->data.verts[poly->data.faces[i].vy],
+			&poly->data.verts[poly->data.faces[i].vz]);
 
 		/* Start RotTransPers of triangle */
 		gte_rtpt();
 
 		gte_nclip();
-		gte_stsxy3c(&dc_sxytbl[0]);
+		gte_stopz(&gteResult);
+		if( gteResult <= 0 ) {
+			continue;
+		}
 
-		gte_stdp(&p);
-		gte_stflg(&flag);
-		gte_stszotz(&otz);
+		gte_avsz3();
+		gte_stotz(&gteResult);
 
-		*(unsigned long long *)&polyf3->x0
-			= *(unsigned long long *)&dc_sxytbl[0];
-		*(u_long *)&polyf3->x2 = *(u_long *)&dc_sxytbl[2];
+		gteResult >>= 2;
+		if( gteResult <= 0 || gteResult >= OT_LENGTH ) {
+			continue;
+		}
+
+		gte_stsxy3(&polyf3->x0, &polyf3->x1, &polyf3->x2);
+		if( _testTriClip((DVECTOR *)&polyf3->x0, (DVECTOR *)&polyf3->x1,
+				(DVECTOR *)&polyf3->x2) ) {
+			continue;
+		}
 
 		setPolyF3(polyf3);
-		setRGB0(polyf3, 255, 255, 0);
+		setRGB0(polyf3, i * 12, i * 10, 127);
 
-		AddPrim(&ot[activeBuffer][otz - 2], &polyf3);
+		addPrim(&ot[activeBuffer][gteResult], polyf3);
 
-		nextPrimitive += sizeof(*polyf3);
+		++polyf3;
 	}
+
+	nextPrimitive = (char *)polyf3;
 }

@@ -15,11 +15,11 @@ class Mesh:
         self.output: str = name[:-4] + ".mf"
 
     def add_vert(self, v_list: list[str]) -> None:
-        self.verts.append([int(float(v)) for v in v_list])
+        self.verts.append([int(float(v) * 32) for v in v_list])
         self.vcount += 1
 
     def add_face(self, f_list: list[str]) -> None:
-        self.faces.append([int(f) for f in f_list])
+        self.faces.append([(int(f) - 1) for f in f_list])
         self.fcount += 1
 
     def __save_count(self, file) -> None:

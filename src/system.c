@@ -7,21 +7,33 @@
 #include <libetc.h>
 #include <libgte.h>
 #include <libgpu.h>
+#include <libapi.h>
 #include <malloc.h>
 
 #include "common.h"
 #include "gfx.h"
 #include "system.h"
 
+static void _initCD(void) {
+	if( !CdInit() ) {
+		LOG("Error initializing CD!\n");
+		return;
+	}
+
+	CdControl(CdlNop, 0, 0);
+	CdStatus();
+
+	CdControlB(CdlSetmode, (u_char *)CdlModeSpeed, 0);
+	VSync(3);
+}
+
 void sysInit(void) {
 	LOG("Inititalizing everything...\n");
 
-	LOG("* Inititalizing system callbacks... ");
-	ResetCallback();
-	LOG("Success!\n");
-
 	LOG("* Allocating 1024KB of memory for the heap... ");
+	EnterCriticalSection();
 	InitHeap3((void *)0x800F8000, 0x00100000);
+	ExitCriticalSection();
 	LOG("Success!\n");
 
 	LOG("* Initializing graphics...\n. ");
@@ -29,7 +41,7 @@ void sysInit(void) {
 	LOG(". Success!\n");
 
 	LOG("* Inititalizing the CD...\n. ");
-	CdInit();
+	_initCD();
 	LOG(". Success!\n");
 
 	LOG("Everything was initialized succesfully!\n");
