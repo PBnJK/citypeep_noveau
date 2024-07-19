@@ -12,6 +12,7 @@
 
 #include "common.h"
 #include "gfx.h"
+#include "input.h"
 #include "system.h"
 
 static void _initCD(void) {
@@ -30,6 +31,13 @@ static void _initCD(void) {
 void sysInit(void) {
 	LOG("Inititalizing everything...\n");
 
+	LOG("* Inititalizing system callbacks... ");
+	ResetCallback();
+	LOG("Success!\n");
+
+	LOG("* Where am I...? ");
+	gfxCheckRegion();
+
 	LOG("* Allocating 1024KB of memory for the heap... ");
 	EnterCriticalSection();
 	InitHeap3((void *)0x800F8000, 0x00100000);
@@ -38,11 +46,15 @@ void sysInit(void) {
 
 	LOG("* Initializing graphics...\n. ");
 	gfxInit();
-	LOG(". Success!\n");
+	LOG("Success!\n");
 
 	LOG("* Inititalizing the CD...\n. ");
 	_initCD();
-	LOG(". Success!\n");
+	LOG("Success!\n");
+
+	LOG("* Initializing input...\n");
+	inputInit();
+	LOG("Success!\n");
 
 	LOG("Everything was initialized succesfully!\n");
 }

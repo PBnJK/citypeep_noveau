@@ -42,13 +42,13 @@ void gfxCheckRegion(void) {
 	/* This string changes depending on the system region! */
 	const char *SCEE_STRING_ADRESS = (char *)0xbfc7ff52;
 	if( *SCEE_STRING_ADRESS == 'E' ) {
-		LOG("(PAL detected)\n");
+		LOG("I'm in a PAL region!\n");
 
 		SetVideoMode(MODE_PAL);
 		gSCR_HEIGHT = 256;
 		gSCR_CENTER_HEIGHT = gSCR_HEIGHT >> 1;
 	} else {
-		LOG("(NTSC detected)\n");
+		LOG("I'm in an NTSC region!\n");
 		SetVideoMode(MODE_NTSC);
 	}
 }
@@ -94,7 +94,7 @@ void gfxInit(void) {
 
 #ifdef DEBUG
 	FntLoad(960, 0);
-	FntOpen(0, 0, gSCR_WIDTH, gSCR_HEIGHT, 0, 256);
+	FntOpen(32, 32, gSCR_WIDTH, gSCR_HEIGHT, 0, 256);
 #endif
 
 	/* Turn on drawing */
@@ -107,6 +107,10 @@ void gfxDisplay(void) {
 	 */
 	DrawSync(0);
 	VSync(0);
+
+#ifdef DEBUG
+	FntFlush(-1);
+#endif
 
 	/* Update disp & draw environments */
 	PutDispEnv(&disp[activeBuffer]);
@@ -206,9 +210,6 @@ void gfxDrawMesh(CP_Mesh *poly) {
 
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
-
-	poly->rot.vx += 4;
-	poly->rot.vz += 4;
 
 	polyf3 = (POLY_F3 *)nextPrimitive;
 

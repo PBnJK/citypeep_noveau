@@ -1,4 +1,4 @@
-Cartesian
+Translation:
 
        ^ -y
        |
@@ -8,8 +8,6 @@ Cartesian
 	   |
 	+y v
 
-~~~~~~~~~~~~~~~~~~~~~~
-
 you  screen
                   ^ -y
                   |
@@ -18,3 +16,15 @@ o>o    |   -z     |     +z
 /|\    |D         |
 |||     |         |
 3_3    _|_     +y v
+
+Rotation:
+
+       ^ -x
+       |
+-y     |     +y
+<----- o ----->
+       |
+	   |
+	+x v
+
+z is the same as y, but in relation to x (?)
