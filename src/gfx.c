@@ -34,7 +34,7 @@ static char *nextPrimitive = primbuff[0];
 
 RECT screen = { 0 };
 
-long gteResult;
+int gteResult;
 
 POLY_F3 *polyf3 = { 0 };
 
@@ -69,9 +69,6 @@ void gfxInit(void) {
 		disp[1].screen.y = 16;
 	}
 
-	/* Turn on drawing */
-	SetDispMask(1);
-
 	/* Set clear color and ensure that the background is cleared */
 	setRGB0(&draw[0], 50, 60, 70);
 	draw[0].isbg = 1;
@@ -97,6 +94,9 @@ void gfxInit(void) {
 	FntLoad(960, 0);
 	FntOpen(0, 0, gSCR_WIDTH, gSCR_HEIGHT, 0, 256);
 #endif
+
+	/* Turn on drawing */
+	SetDispMask(1);
 }
 
 void gfxDisplay(void) {
@@ -109,8 +109,6 @@ void gfxDisplay(void) {
 	/* Update disp & draw environments */
 	PutDispEnv(&disp[activeBuffer]);
 	PutDrawEnv(&draw[activeBuffer]);
-
-	SetDispMask(1);
 
 	/* Draw contents of ordering table */
 	DrawOTag(ot[activeBuffer] + OT_LENGTH - 1);
@@ -134,22 +132,24 @@ void gfxLoadM3(const char *PATH, CP_M3 *mesh3) {
 	mesh3->faces = malloc3(mesh3->fcount * sizeof(*mesh3->faces));
 
 	for( ; i < mesh3->vcount; ++i ) {
-		mesh3->verts[i].vx = (int)((*data) & 0xFF);
-		mesh3->verts[i].vy = (int)((*data++) >> 16);
-		mesh3->verts[i].vz = (int)((*data) & 0xFF);
+		mesh3->verts[i].vx = *data;
+		mesh3->verts[i].vy = (*data++) >> 16;
+		mesh3->verts[i].vz = *data;
+		++i;
 
-		mesh3->verts[++i].vx = (int)((*data++) >> 16);
-		mesh3->verts[i].vy = (int)((*data) & 0xFF);
-		mesh3->verts[i].vz = (int)((*data++) >> 16);
+		mesh3->verts[i].vx = (*data++) >> 16;
+		mesh3->verts[i].vy = *data;
+		mesh3->verts[i].vz = (*data++) >> 16;
 	}
 
 	for( i = 0; i < mesh3->fcount; ++i ) {
-		mesh3->faces[i].vx = (*data) & 0xFF;
+		mesh3->faces[i].vx = *data;
 		mesh3->faces[i].vy = (*data++) >> 16;
-		mesh3->faces[i].vz = (*data) & 0xFF;
+		mesh3->faces[i].vz = *data;
+		++i;
 
-		mesh3->faces[++i].vx = (*data++) >> 16;
-		mesh3->faces[i].vy = (*data) & 0xFF;
+		mesh3->faces[i].vx = (*data++) >> 16;
+		mesh3->faces[i].vy = *data;
 		mesh3->faces[i].vz = (*data++) >> 16;
 	}
 }
@@ -196,15 +196,14 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 }
 
 void gfxDrawPolyF3(CP_PolyF3 *poly) {
-	RotMatrix_gte(&poly->rot, &poly->mat);
-	TransMatrix(&poly->mat, &poly->trans);
-	ScaleMatrix(&poly->mat, &poly->scale);
+	MATRIX omtx;
 
-	gte_SetRotMatrix(&poly->mat);
-	gte_SetTransMatrix(&poly->mat);
+	RotMatrix_gte(&poly->rot, &omtx);
+	TransMatrix(&omtx, &poly->trans);
+	ScaleMatrix(&omtx, &poly->scale);
 
-	poly->rot.vy += 8;
-	poly->rot.vz += 8;
+	gte_SetRotMatrix(&omtx);
+	gte_SetTransMatrix(&omtx);
 
 	polyf3 = (POLY_F3 *)nextPrimitive;
 
@@ -239,7 +238,15 @@ void gfxDrawPolyF3(CP_PolyF3 *poly) {
 		setPolyF3(polyf3);
 		setRGB0(polyf3, i * 12, i * 10, 127);
 
-		addPrim(&ot[activeBuffer][gteResult], polyf3);
+		gte_stdp(&gteResult);
+		gte_stflg(&gteResult);
+		gte_stszotz(&gteResult);
+
+		gteResult /= 3;
+
+		if( gteResult > 0 && gteResult < OT_LENGTH ) {
+			addPrim(ot[activeBuffer] + gteResult, polyf3);
+		}
 
 		++polyf3;
 	}

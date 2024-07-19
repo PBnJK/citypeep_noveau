@@ -13,9 +13,8 @@
 
 int main(void) {
 	CP_PolyF3 polyf3 = { .rot = { 0, 0, 0, 0 },
-		.trans = { 0, 0, 196, 0 },
-		.scale = { ONE, ONE, ONE, 0 },
-		.mat = { 0 } };
+		.trans = { 0, 0, 240, 0 },
+		.scale = { ONE, ONE, ONE, 0 } };
 
 	LOG("* Inititalizing system callbacks... ");
 	ResetCallback();

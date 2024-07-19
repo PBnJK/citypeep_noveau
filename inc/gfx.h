@@ -23,7 +23,6 @@ typedef struct {
 	VECTOR scale;
 
 	CP_M3 data;
-	MATRIX mat; /* per object? */
 } CP_PolyF3;
 
 void gfxCheckRegion(void);
