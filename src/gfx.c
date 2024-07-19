@@ -90,6 +90,8 @@ void gfxInit(void) {
 	gte_SetGeomOffset(gSCR_CENTER_WIDTH, gSCR_CENTER_HEIGHT);
 	gte_SetGeomScreen(gSCR_CENTER_WIDTH);
 
+	ClearOTagR(ot[activeBuffer], OT_LENGTH);
+
 #ifdef DEBUG
 	FntLoad(960, 0);
 	FntOpen(0, 0, gSCR_WIDTH, gSCR_HEIGHT, 0, 256);
@@ -119,38 +121,38 @@ void gfxDisplay(void) {
 	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 }
 
-void gfxLoadM3(const char *PATH, CP_M3 *mesh3) {
+void gfxLoadMesh(const char *PATH, CP_Mesh *mesh) {
 	int i = 0;
 
 	u_long *loaded = sysLoadFileFromCD(PATH);
 	u_long *data = loaded;
 
-	mesh3->vcount = *data++;
-	mesh3->fcount = *data++;
+	mesh->vcount = *data++;
+	mesh->fcount = *data++;
 
-	mesh3->verts = malloc3(mesh3->vcount * sizeof(*mesh3->verts));
-	mesh3->faces = malloc3(mesh3->fcount * sizeof(*mesh3->faces));
+	mesh->verts = malloc3(mesh->vcount * sizeof(*mesh->verts));
+	mesh->faces = malloc3(mesh->fcount * sizeof(*mesh->faces));
 
-	for( ; i < mesh3->vcount; ++i ) {
-		mesh3->verts[i].vx = *data;
-		mesh3->verts[i].vy = (*data++) >> 16;
-		mesh3->verts[i].vz = *data;
+	for( ; i < mesh->vcount; ++i ) {
+		mesh->verts[i].vx = *data;
+		mesh->verts[i].vy = (*data++) >> 16;
+		mesh->verts[i].vz = *data;
 		++i;
 
-		mesh3->verts[i].vx = (*data++) >> 16;
-		mesh3->verts[i].vy = *data;
-		mesh3->verts[i].vz = (*data++) >> 16;
+		mesh->verts[i].vx = (*data++) >> 16;
+		mesh->verts[i].vy = *data;
+		mesh->verts[i].vz = (*data++) >> 16;
 	}
 
-	for( i = 0; i < mesh3->fcount; ++i ) {
-		mesh3->faces[i].vx = *data;
-		mesh3->faces[i].vy = (*data++) >> 16;
-		mesh3->faces[i].vz = *data;
+	for( i = 0; i < mesh->fcount; ++i ) {
+		mesh->faces[i].vx = *data;
+		mesh->faces[i].vy = (*data++) >> 16;
+		mesh->faces[i].vz = *data;
 		++i;
 
-		mesh3->faces[i].vx = (*data++) >> 16;
-		mesh3->faces[i].vy = *data;
-		mesh3->faces[i].vz = (*data++) >> 16;
+		mesh->faces[i].vx = (*data++) >> 16;
+		mesh->faces[i].vy = *data;
+		mesh->faces[i].vz = (*data++) >> 16;
 	}
 }
 
@@ -195,7 +197,7 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 	return 1;
 }
 
-void gfxDrawPolyF3(CP_PolyF3 *poly) {
+void gfxDrawMesh(CP_Mesh *poly) {
 	MATRIX omtx;
 
 	RotMatrix_gte(&poly->rot, &omtx);
@@ -205,19 +207,21 @@ void gfxDrawPolyF3(CP_PolyF3 *poly) {
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
 
+	poly->rot.vx += 4;
+	poly->rot.vz += 4;
+
 	polyf3 = (POLY_F3 *)nextPrimitive;
 
-	for( int i = 0; i < poly->data.fcount; ++i ) {
-		gte_ldv3(&poly->data.verts[poly->data.faces[i].vx],
-			&poly->data.verts[poly->data.faces[i].vy],
-			&poly->data.verts[poly->data.faces[i].vz]);
+	for( int i = 0; i < poly->fcount; ++i ) {
+		gte_ldv3(&poly->verts[poly->faces[i].vx],
+			&poly->verts[poly->faces[i].vy], &poly->verts[poly->faces[i].vz]);
 
 		/* Start RotTransPers of triangle */
 		gte_rtpt();
 
 		gte_nclip();
 		gte_stopz(&gteResult);
-		if( gteResult <= 0 ) {
+		if( gteResult >= 0 ) {
 			continue;
 		}
 

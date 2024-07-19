@@ -12,9 +12,11 @@
 #include "gfx.h"
 
 int main(void) {
-	CP_PolyF3 polyf3 = { .rot = { 0, 0, 0, 0 },
-		.trans = { 0, 0, 240, 0 },
+	CP_Mesh mesh = { .rot = { 0, 0, 0, 0 },
+		.trans = { 0, 0, 120, 0 },
 		.scale = { ONE, ONE, ONE, 0 } };
+
+	LOG("=== GAME ENTERED ===\n\n");
 
 	LOG("* Inititalizing system callbacks... ");
 	ResetCallback();
@@ -22,12 +24,13 @@ int main(void) {
 
 	gfxCheckRegion();
 
-	LOG("=== GAME ENTERED ===\n");
 	sysInit();
 
-	gfxLoadM3("\\MDL\\CUBE.MF;1", &polyf3.data);
+	gfxLoadMesh("\\MDL\\CUBE.MF;1", &mesh);
+
+	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
-		gfxDrawPolyF3(&polyf3);
+		gfxDrawMesh(&mesh);
 
 		gfxDisplay();
 	}
