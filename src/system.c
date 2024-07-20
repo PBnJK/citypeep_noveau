@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include <sys/types.h>
-#include <libcd.h>
+#include <libds.h>
 #include <libetc.h>
 #include <libgte.h>
 #include <libgpu.h>
@@ -16,15 +16,15 @@
 #include "system.h"
 
 static void _initCD(void) {
-	if( !CdInit() ) {
+	if( !DsInit() ) {
 		LOG("Error initializing CD!\n");
 		return;
 	}
 
-	CdControl(CdlNop, 0, 0);
-	CdStatus();
+	DsControl(DslNop, 0, 0);
+	DsStatus();
 
-	CdControlB(CdlSetmode, (u_char *)CdlModeSpeed, 0);
+	DsControlB(DslSetmode, (u_char *)DslModeSpeed, 0);
 	VSync(3);
 }
 
@@ -60,25 +60,28 @@ void sysInit(void) {
 }
 
 u_long *sysLoadFileFromCD(const char *FILENAME) {
-	CdlFILE fsFile;
-	u_long *buffer;
+	DslFILE file;
+	u_long *buf;
 
 	LOG("Reading file '%s'... ", FILENAME);
 
-	/* Search for file, if found: put "address" on fsFile */
-	if( !CdSearchFile(&fsFile, (char *)FILENAME) ) {
+	/* Search for file, if found: put "address" on file */
+	if( !DsSearchFile(&file, (char *)FILENAME) ) {
 		LOG("NOT FOUND!\n");
 		return 0;
 	}
 
-	buffer = malloc3(CALC_SECTOR_SIZE(fsFile.size) * CD_SECTOR_SIZE);
+	/* Convert size of file to number of sectors and alloc space for it */
+	buf = malloc3(CALC_SECTOR_SIZE(file.size) * CD_SECTOR_SIZE);
 
-	/* Set the seek target to the file's position & read! */
-	CdControl(CdlSetloc, (u_char *)&fsFile.pos, 0);
-	CdRead((int)CALC_SECTOR_SIZE(fsFile.size), buffer, CdlModeSpeed);
+	/* Start read to buffer */
+	DsRead(&file.pos, (int)CALC_SECTOR_SIZE(file.size), buf, DslModeSpeed);
 
-	/* Wait for read to finish (CdRead is non-blocking) */
-	(CdReadSync(0, 0) == 0) ? LOG("SUCCESS!\n\n") : LOG("FAILURE!\n\n");
+	/* Wait for read to finish (DsRead is non-blocking) */
+	while( DsReadSync(0) )
+		;
 
-	return buffer;
+	LOG("Success!\n");
+
+	return buf;
 }

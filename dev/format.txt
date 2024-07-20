@@ -13,13 +13,15 @@ Vertices:    SVECTOR
 GTE works like this:
 Rot -> Trans -> Scale -> Vertices -> RTPT
 
-Flat, textureless meshes are stored like this (.MF):
-
 0       7       15      23      31
 ├───────┴───────┴───────┴───────┤
 │ Number of vertices (Nv)       │
 ├───────────────────────────────┤
 │ Number of faces (Nf)          │
+├───────────────────────────────┤
+│ Number of UVs (Nt)            │ # .MT only
+├───────────────────────────────┤
+│ Number of normals (Nn)        │ # .MT only
 ├───────────────┬───────────────┤
 │     V0.0      │     V0.1      │
 ├───────────────┼───────────────┤
@@ -36,11 +38,26 @@ Flat, textureless meshes are stored like this (.MF):
 │     F1.1      │     F1.1      │
 ├───────────────┴───────────────┤
 │            ..., Nf            │
+├───────────────┬───────────────┤
+│      U0       │      V0       │ # UV coords, .MT only
+├───────────────┼───────────────┤
+│      U1       │      V1       │
+├───────────────┴───────────────┤
+│            ..., Nt            │
+├───────────────┬───────────────┤
+│     T0.0      │     T0.1      │ # UV indices, .MT only, same number as faces
+├───────────────┼───────────────┤
+│     T0.3      │     T1.0      │
+├───────────────┼───────────────┤
+│     T1.1      │     T1.1      │
+├───────────────┴───────────────┤
+│            ..., Nf            │
 └───────────────────────────────┘
+
+normals too... guh
 
 32 bit > Nv
 16 bit > Verts
 32 bit > Nf
 16 bit > Faces
-
-Textured meshes are stored like this (.MT):
+16 bit > UVs 

@@ -20,7 +20,7 @@ static void _exit(void) {
 }
 
 int main(void) {
-	CP_Mesh mesh = { .rot = { 0, 0, 0, 0 },
+	CP_MeshT mesh = { .rot = { 0, 0, 0, 0 },
 		.trans = { 0, 0, 120, 0 },
 		.scale = { ONE, ONE, ONE, 0 } };
 
@@ -28,7 +28,7 @@ int main(void) {
 
 	sysInit();
 
-	gfxLoadMesh("\\MDL\\CUBE.MF;1", &mesh);
+	gfxLoadMeshT("\\MDL\\CUBE.MF;1", "\\MDL\\TEX.TIM;1", &mesh);
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
@@ -56,7 +56,7 @@ int main(void) {
 			mesh.rot.vz += 16;
 		}
 
-		gfxDrawMesh(&mesh);
+		gfxDrawMeshT(&mesh);
 
 		gfxDisplay();
 	}
