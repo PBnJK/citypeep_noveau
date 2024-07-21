@@ -37,8 +37,11 @@ RECT screen = { 0 };
 
 int gteResult;
 
-POLY_F3 *polyf3 = { 0 };
-POLY_FT3 *polyft3 = { 0 };
+POLY_F3 *polyf3;
+POLY_FT3 *polyft3;
+
+DR_MODE *drmode;
+RECT tws = { 0, 0, 32, 32 };
 
 static MATRIX colorMatrix = {
 	ONE * 3 / 4, 0, 0, /* Red   */
@@ -165,8 +168,11 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 	imgLoad(TEX, &mesh->tex);
 
 	int actualW = mesh->tex.prect->w;
-	if( !(mesh->tex.mode & 0x3) ) {
-		actualW *= 2;
+	switch( mesh->tex.mode & 0x3 ) {
+	case 0:
+		actualW <<= 1;
+	case 1:
+		actualW <<= 1;
 	}
 
 	mesh->tpage = getTPage(
@@ -361,9 +367,12 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 
 	gte_SetLightMatrix(&lmtx);
 
-	for( int i = 0; i < poly->fcount; ++i ) {
-		polyft3 = (POLY_FT3 *)nextPrimitive;
+	polyft3 = (POLY_FT3 *)nextPrimitive;
 
+	draw[0].tpage = poly->tpage;
+	draw[1].tpage = poly->tpage;
+
+	for( int i = 0; i < poly->fcount; ++i ) {
 		gte_ldv3(&poly->verts[poly->faces[i].vx],
 			&poly->verts[poly->faces[i].vy], &poly->verts[poly->faces[i].vz]);
 
@@ -419,6 +428,8 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 			addPrim(ot[activeBuffer] + gteResult, polyft3);
 		}
 
-		nextPrimitive += sizeof(POLY_FT3);
+		++polyft3;
 	}
+
+	nextPrimitive = (char *)polyft3;
 }

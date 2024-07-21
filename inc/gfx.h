@@ -6,7 +6,7 @@
 #include <libgte.h>
 #include <libgpu.h>
 
-#define OT_LENGTH 1024
+#define OT_LENGTH 2048
 #define PACKET_LENGTH 32768
 
 typedef struct {
