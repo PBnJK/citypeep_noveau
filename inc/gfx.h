@@ -56,7 +56,6 @@ typedef struct {
 	SVECTOR *normals;
 } CP_MeshT;
 
-void gfxCheckRegion(void);
 void gfxInit(void);
 
 void gfxPrepare(void);

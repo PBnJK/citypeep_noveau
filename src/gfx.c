@@ -48,21 +48,6 @@ static MATRIX colorMatrix = {
 
 static MATRIX lightMatrix = { -2048, -2048, -2048, 0, 0, 0, 0, 0, 0 };
 
-void gfxCheckRegion(void) {
-	/* This string changes depending on the system region! */
-	const char *SCEE_STRING_ADRESS = (char *)0xbfc7ff52;
-	if( *SCEE_STRING_ADRESS == 'E' ) {
-		LOG("I'm in a PAL region!\n");
-
-		SetVideoMode(MODE_PAL);
-		gSCR_HEIGHT = 256;
-		gSCR_CENTER_HEIGHT = gSCR_HEIGHT >> 1;
-	} else {
-		LOG("I'm in an NTSC region!\n");
-		SetVideoMode(MODE_NTSC);
-	}
-}
-
 void gfxInit(void) {
 	/* Initialize graphics (no debugging) */
 	ResetGraph(0);
@@ -74,17 +59,15 @@ void gfxInit(void) {
 	SetDefDispEnv(&disp[1], 0, gSCR_HEIGHT, gSCR_WIDTH, gSCR_HEIGHT);
 	SetDefDrawEnv(&draw[1], 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
 
-	if( GetVideoMode() == MODE_PAL ) {
-		disp[0].screen.y += 8;
-		disp[1].screen.y += 8;
-	}
+	disp[0].screen.y += 8;
+	disp[1].screen.y += 8;
 
 	/* Set clear color and ensure that the background is cleared */
-	setRGB0(&draw[0], 50, 60, 70);
+	setRGB0(&draw[0], 32, 128, 32);
 	draw[0].isbg = 1;
 	draw[0].dtd = 1;
 
-	setRGB0(&draw[1], 50, 60, 70);
+	setRGB0(&draw[1], 32, 128, 32);
 	draw[1].isbg = 1;
 	draw[1].dtd = 1;
 
@@ -182,10 +165,7 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 	imgLoad(TEX, &mesh->tex);
 
 	int actualW = mesh->tex.prect->w;
-	switch( mesh->tex.mode & 0x3 ) {
-	case 0:
-		actualW *= 2;
-	case 1:
+	if( !(mesh->tex.mode & 0x3) ) {
 		actualW *= 2;
 	}
 
@@ -230,14 +210,8 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 	}
 
 	for( i = 0; i < mesh->tcount; ++i ) {
-		LOG("%08x\n", *data);
-		int u = (actualW * (*data)) / 4096;
-		int v = (mesh->tex.prect->h * ((*data++) >> 16)) / 4096;
-
-		mesh->uvs[i].u = u;
-		mesh->uvs[i].v = v;
-
-		LOG("%d %d\n", u, v);
+		mesh->uvs[i].u = (actualW * (*data)) / 4096;
+		mesh->uvs[i].v = (mesh->tex.prect->h * ((*data++) >> 16)) / 4096;
 	}
 
 	for( i = 0; i < mesh->fcount; ++i ) {
@@ -387,9 +361,9 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 
 	gte_SetLightMatrix(&lmtx);
 
-	polyft3 = (POLY_FT3 *)nextPrimitive;
-
 	for( int i = 0; i < poly->fcount; ++i ) {
+		polyft3 = (POLY_FT3 *)nextPrimitive;
+
 		gte_ldv3(&poly->verts[poly->faces[i].vx],
 			&poly->verts[poly->faces[i].vy], &poly->verts[poly->faces[i].vz]);
 
@@ -398,7 +372,7 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 
 		gte_nclip();
 		gte_stopz(&gteResult);
-		if( gteResult >= 0 ) {
+		if( gteResult > 0 ) {
 			continue;
 		}
 
@@ -418,10 +392,10 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 			continue;
 		}
 
+		setRGB0(polyft3, 128, 128, 128);
+
 		gte_ldrgb(&polyft3->r0);
-		gte_ldv3(&poly->normals[poly->uvidxs[i].vx],
-			&poly->normals[poly->uvidxs[i].vy],
-			&poly->normals[poly->uvidxs[i].vz]);
+		gte_ldv0(&poly->normals[poly->uvidxs[i].vx]);
 
 		gte_ncs();
 
@@ -445,8 +419,6 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 			addPrim(ot[activeBuffer] + gteResult, polyft3);
 		}
 
-		++polyft3;
+		nextPrimitive += sizeof(POLY_FT3);
 	}
-
-	nextPrimitive = (char *)polyft3;
 }
