@@ -14,7 +14,6 @@
 #include "gfx.h"
 #include "input.h"
 #include "system.h"
-#include "exception.h"
 
 static void _initCD(void) {
 	if( !DsInit() ) {
@@ -37,8 +36,6 @@ void sysInit(void) {
 	EnterCriticalSection();
 	InitHeap3((void *)0x800F8000, 0x00100000);
 	ExitCriticalSection();
-
-	excInit();
 
 	gfxInit();
 
