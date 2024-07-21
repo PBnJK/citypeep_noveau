@@ -337,8 +337,8 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 		setPolyF3(polyf3);
 		setRGB0(polyf3, i * 12, i * 10, 127);
 
-		gte_stdp(&gteResult);
-		gte_stflg(&gteResult);
+		/* gte_stdp(&gteResult);
+		gte_stflg(&gteResult); */
 		gte_stszotz(&gteResult);
 
 		gteResult /= 3;
@@ -404,7 +404,9 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 		setRGB0(polyft3, 128, 128, 128);
 
 		gte_ldrgb(&polyft3->r0);
-		gte_ldv0(&poly->normals[poly->uvidxs[i].vx]);
+		gte_ldv0(&poly->normals[poly->nidxs[i].vx]);
+
+		/* gte_stdp(&gteResult); */
 
 		gte_ncs();
 
@@ -418,8 +420,7 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 		polyft3->tpage = poly->tpage;
 		polyft3->clut = poly->clut;
 
-		gte_stdp(&gteResult);
-		gte_stflg(&gteResult);
+		/*	gte_stflg(&gteResult); */
 		gte_stszotz(&gteResult);
 
 		gteResult /= 3;
