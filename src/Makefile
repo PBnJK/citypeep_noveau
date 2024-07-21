@@ -1,5 +1,5 @@
 TARGET = citypeep
 
-SRCS = main.c gfx.c image.c system.c common.c input.c \
+SRCS = main.c gfx.c image.c system.c common.c input.c exception.c \
 
 include ../actual_make.mk

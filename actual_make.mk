@@ -17,6 +17,7 @@ CPPFLAGS += -DDEBUG
 # Linker flags
 LDFLAGS += -L$(CURRDIR)thirdparty/nugget/psyq/lib
 LDFLAGS += -L$(CURRDIR)psyq/lib
+LDFLAGS += -T$(CURRDIR)linker.ld
 
 LDFLAGS += -Wl,--start-group
 LDFLAGS += -lapi

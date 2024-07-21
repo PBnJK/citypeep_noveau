@@ -367,7 +367,7 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 
 	gte_SetLightMatrix(&lmtx);
 
-	polyft3 = (POLY_FT3 *)nextPrimitive;
+	// polyft3 = (POLY_FT3 *)nextPrimitive;
 
 	draw[0].tpage = poly->tpage;
 	draw[1].tpage = poly->tpage;
