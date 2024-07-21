@@ -355,6 +355,7 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 
 void gfxDrawMeshT(CP_MeshT *poly) {
 	MATRIX omtx, lmtx;
+	int otz;
 
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);
@@ -386,10 +387,10 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 		}
 
 		gte_avsz3();
-		gte_stotz(&gteResult);
+		gte_stotz(&otz);
 
-		gteResult >>= 2;
-		if( gteResult <= 0 || gteResult >= OT_LENGTH ) {
+		otz >>= 2;
+		if( otz <= 0 || otz >= OT_LENGTH ) {
 			continue;
 		}
 
@@ -426,7 +427,7 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 		gteResult /= 3;
 
 		if( gteResult > 0 && gteResult < OT_LENGTH ) {
-			addPrim(ot[activeBuffer] + gteResult, polyft3);
+			addPrim(ot[activeBuffer] + otz, polyft3);
 		}
 
 		++polyft3;

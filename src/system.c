@@ -31,6 +31,8 @@ static void _initCD(void) {
 void sysInit(void) {
 	LOG("Inititalizing everything...\n");
 
+	SetVideoMode(MODE_NTSC);
+
 	ResetCallback();
 
 	EnterCriticalSection();
