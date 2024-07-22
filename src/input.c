@@ -1,14 +1,11 @@
 /* Citypeep: Input handler */
 
-#include <stdio.h>
-
 #include <sys/types.h>
 
 #include <libpad.h>
 #include <libgte.h>
 #include <libgpu.h>
 
-#include "common.h"
 #include "input.h"
 
 CP_PadData padData[2];

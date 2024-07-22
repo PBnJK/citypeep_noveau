@@ -13,10 +13,10 @@ typedef int bool;
 #define false 0
 #define true 1
 
-extern int gSCR_WIDTH;
-extern int gSCR_CENTER_WIDTH;
+#define SCR_WIDTH 320
+#define SCR_CENTER_WIDTH (SCR_WIDTH / 2)
 
-extern int gSCR_HEIGHT;
-extern int gSCR_CENTER_HEIGHT;
+#define SCR_HEIGHT 240
+#define SCR_CENTER_HEIGHT (SCR_HEIGHT / 2)
 
 #endif // !GUARD_CITYPEEP_COMMON_H_

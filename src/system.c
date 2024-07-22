@@ -21,6 +21,7 @@ static void _initCD(void) {
 		return;
 	}
 
+	DsSetDebug(0);
 	DsControl(DslNop, 0, 0);
 	DsStatus();
 

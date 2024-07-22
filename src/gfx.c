@@ -36,6 +36,7 @@ static volatile u_char activeBuffer = 0;
 static char *nextPrimitive = primbuff[0];
 
 RECT screen;
+RECT vram = { 0, 0, 1024, 512 };
 
 int gteResult;
 
@@ -55,14 +56,14 @@ void gfxInit(void) {
 	ResetGraph(0);
 	SetGraphDebug(0);
 
-	/* Initialize contents of disp & draw environments */
-	SetDefDispEnv(&disp[0], 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
-	SetDefDrawEnv(&draw[0], 0, gSCR_HEIGHT, gSCR_WIDTH, gSCR_HEIGHT);
-	SetDefDispEnv(&disp[1], 0, gSCR_HEIGHT, gSCR_WIDTH, gSCR_HEIGHT);
-	SetDefDrawEnv(&draw[1], 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
+	/* Clear all of VRAM to black */
+	ClearImage(&vram, 0, 0, 0);
 
-	disp[0].screen.y += 8;
-	disp[1].screen.y += 8;
+	/* Initialize contents of disp & draw environments */
+	SetDefDispEnv(&disp[0], 0, 0, SCR_WIDTH, SCR_HEIGHT);
+	SetDefDrawEnv(&draw[0], 0, SCR_HEIGHT, SCR_WIDTH, SCR_HEIGHT);
+	SetDefDispEnv(&disp[1], 0, SCR_HEIGHT, SCR_WIDTH, SCR_HEIGHT);
+	SetDefDrawEnv(&draw[1], 0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 	/* Set clear color and ensure that the background is cleared */
 	setRGB0(&draw[0], 32, 128, 32);
@@ -77,31 +78,33 @@ void gfxInit(void) {
 	PutDispEnv(&disp[activeBuffer]);
 	PutDrawEnv(&draw[activeBuffer]);
 
-	nextPrimitive = primbuff[activeBuffer];
+	setRECT(&screen, 0, 0, SCR_WIDTH, SCR_HEIGHT);
 
-	setRECT(&screen, 0, 0, gSCR_WIDTH, gSCR_HEIGHT);
-
+	/* Initialize the GTE */
 	InitGeom();
-	gte_SetGeomOffset(gSCR_CENTER_WIDTH, gSCR_CENTER_HEIGHT);
-	gte_SetGeomScreen(gSCR_CENTER_WIDTH);
+	gte_SetGeomOffset(SCR_CENTER_WIDTH, SCR_CENTER_HEIGHT);
+	gte_SetGeomScreen(SCR_CENTER_WIDTH);
 
+	/* Fog setup */
 	gte_SetBackColor(63, 63, 63);
 	gte_SetColorMatrix(&colorMatrix);
 
+	/* Prepare first OT */
+	nextPrimitive = primbuff[activeBuffer];
 	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 
 #ifdef DEBUG
 	FntLoad(960, 0);
-	FntOpen(32, 32, gSCR_WIDTH, gSCR_HEIGHT, 0, 256);
+	FntOpen(32, 32, SCR_WIDTH, SCR_HEIGHT, 0, 256);
 #endif
 
-	/* Turn on drawing */
+	/* Turn on drawing! */
 	SetDispMask(1);
 }
 
 void gfxDisplay(void) {
 	/* Wait for all drawing from previous frame to terminate
-	 * We need to do this, since DrawOTag is non-blocking
+	 * We need to do this because DrawOTag is non-blocking
 	 */
 	DrawSync(0);
 	VSync(0);
@@ -127,6 +130,8 @@ void gfxInitMeshF(CP_MeshF *mesh) {
 	setVector(&mesh->rot, 0, 0, 0);
 	setVector(&mesh->trans, 0, 0, 0);
 	setVector(&mesh->scale, ONE, ONE, ONE);
+
+	mesh->flags.visible = 1;
 }
 
 void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh) {
@@ -169,6 +174,8 @@ void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to) {
 	copyVector(&to->trans, &from->trans);
 	copyVector(&to->scale, &from->scale);
 
+	to->flags = from->flags;
+
 	to->vcount = from->vcount;
 	to->fcount = from->fcount;
 
@@ -183,15 +190,15 @@ void gfxInitMeshT(CP_MeshT *mesh) {
 	setVector(&mesh->rot, 0, 0, 0);
 	setVector(&mesh->trans, 0, 0, 0);
 	setVector(&mesh->scale, ONE, ONE, ONE);
+
+	mesh->flags.visible = 1;
 }
 
-void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
+u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh) {
+	u_int size = 0;
 	int i = 0;
 
 	gfxInitMeshT(mesh);
-
-	u_long *loaded = sysLoadFileFromCD(PATH);
-	u_long *data = loaded;
 
 	imgLoad(TEX, &mesh->tex);
 
@@ -212,6 +219,8 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 	mesh->tcount = *data++;
 	mesh->ncount = *data++;
 
+	size += 4;
+
 	mesh->verts = malloc3(mesh->vcount * sizeof(*mesh->verts));
 	mesh->faces = malloc3(mesh->fcount * sizeof(*mesh->faces));
 
@@ -230,6 +239,8 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 		mesh->verts[i].vx = (*data++) >> 16;
 		mesh->verts[i].vy = *data;
 		mesh->verts[i].vz = (*data++) >> 16;
+
+		size += 3;
 	}
 
 	for( i = 0; i < mesh->fcount; ++i ) {
@@ -241,11 +252,15 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 		mesh->faces[i].vx = (*data++) >> 16;
 		mesh->faces[i].vy = *data;
 		mesh->faces[i].vz = (*data++) >> 16;
+
+		size += 3;
 	}
 
 	for( i = 0; i < mesh->tcount; ++i ) {
 		mesh->uvs[i].u = (actualW * (*data)) / 4096;
 		mesh->uvs[i].v = (mesh->tex.prect->h * ((*data++) >> 16)) / 4096;
+
+		++size;
 	}
 
 	for( i = 0; i < mesh->fcount; ++i ) {
@@ -257,6 +272,8 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 		mesh->uvidxs[i].vx = (*data++) >> 16;
 		mesh->uvidxs[i].vy = *data;
 		mesh->uvidxs[i].vz = (*data++) >> 16;
+
+		size += 3;
 	}
 
 	for( i = 0; i < mesh->ncount; ++i ) {
@@ -268,6 +285,8 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 		mesh->normals[i].vx = (*data++) >> 16;
 		mesh->normals[i].vy = *data;
 		mesh->normals[i].vz = (*data++) >> 16;
+
+		size += 3;
 	}
 
 	for( i = 0; i < mesh->fcount; ++i ) {
@@ -279,13 +298,26 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 		mesh->nidxs[i].vx = (*data++) >> 16;
 		mesh->nidxs[i].vy = *data;
 		mesh->nidxs[i].vz = (*data++) >> 16;
+
+		size += 3;
 	}
+
+	LOG("model data %d\n", *data);
+
+	return size;
+}
+
+u_int gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
+	u_long *loaded = sysLoadFileFromCD(PATH);
+	return gfxLoadMeshPtrT(loaded, TEX, mesh);
 }
 
 void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to) {
 	copyVector(&to->rot, &from->rot);
 	copyVector(&to->trans, &from->trans);
 	copyVector(&to->scale, &from->scale);
+
+	to->flags = from->flags;
 
 	to->tpage = from->tpage;
 	to->clut = from->clut;
@@ -357,6 +389,11 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 
 void gfxDrawMeshF(CP_MeshF *poly) {
 	MATRIX omtx;
+	int otz;
+
+	if( !poly->flags.visible ) {
+		return;
+	}
 
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);
@@ -381,10 +418,10 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 		}
 
 		gte_avsz3();
-		gte_stotz(&gteResult);
+		gte_stotz(&otz);
 
-		gteResult >>= 2;
-		if( gteResult <= 0 || gteResult >= OT_LENGTH ) {
+		otz >>= 2;
+		if( otz <= 0 || otz >= OT_LENGTH ) {
 			continue;
 		}
 
@@ -404,7 +441,7 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 		gteResult /= 3;
 
 		if( gteResult > 0 && gteResult < OT_LENGTH ) {
-			addPrim(ot[activeBuffer] + gteResult, polyf3);
+			addPrim(ot[activeBuffer] + otz, polyf3);
 		}
 
 		++polyf3;
@@ -416,6 +453,10 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 void gfxDrawMeshT(CP_MeshT *poly) {
 	MATRIX omtx, lmtx;
 	int otz;
+
+	if( !poly->flags.visible ) {
+		return;
+	}
 
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);

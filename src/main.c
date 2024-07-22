@@ -32,16 +32,7 @@ int main(void) {
 
 	sysInit();
 
-	actorInit(&actor, 3);
-
-	gfxLoadMeshT("\\MDL\\CUBE.MF;1", "\\MDL\\TEX.TIM;1", &actor.mesh[0]);
-	actor.mesh[0].trans.vz = 120;
-
-	gfxCopyMeshT(&actor.mesh[0], &actor.mesh[1]);
-	gfxCopyMeshT(&actor.mesh[0], &actor.mesh[2]);
-
-	actor.mesh[1].trans.vx -= 48;
-	actor.mesh[2].trans.vx += 48;
+	actorLoad("\\ACT\\CUBOID.ACT;1", &actor);
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {

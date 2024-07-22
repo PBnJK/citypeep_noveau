@@ -13,10 +13,16 @@ typedef struct {
 	u_char u, v;
 } CP_UV;
 
+typedef struct {
+	u_int visible : 1;
+} CP_MeshFlags;
+
 typedef struct CP_MeshF {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
+
+	CP_MeshFlags flags;
 
 	/* Array of vertices (with size) */
 	int vcount;
@@ -33,6 +39,8 @@ typedef struct CP_MeshT {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
+
+	CP_MeshFlags flags;
 
 	/* Array of vertices (with size) */
 	int vcount;
@@ -70,7 +78,8 @@ void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to);
 void gfxDrawMeshF(CP_MeshF *mesh);
 
 void gfxInitMeshT(CP_MeshT *mesh);
-void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh);
+u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh);
+u_int gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh);
 void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to);
 void gfxDrawMeshT(CP_MeshT *mesh);
 
