@@ -1,9 +1,7 @@
 /* Citypeep: Actor */
 
-#include <stdio.h>
 #include <malloc.h>
 
-#include "common.h"
 #include "actor.h"
 #include "gfx.h"
 #include "system.h"
@@ -37,10 +35,12 @@ void actorLoad(const char *PATH, CP_Actor *actor) {
 			data += gfxLoadMeshPtrT(data, "\\MDL\\TEX.TIM;1", &actor->mesh[i]);
 		}
 
+		/* SVECTOR (2 bytes per member) */
 		actor->mesh[i].rot.vx = *data;
 		actor->mesh[i].rot.vy = (*data++) >> 16;
 		actor->mesh[i].rot.vz = *data++;
 
+		/* VECTORs (4 bytes per member) */
 		actor->mesh[i].trans.vx = *data++;
 		actor->mesh[i].trans.vy = *data++;
 		actor->mesh[i].trans.vz = *data++;

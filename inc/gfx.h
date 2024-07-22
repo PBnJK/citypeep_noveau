@@ -31,8 +31,6 @@ typedef struct CP_MeshF {
 	/* Array of indices to vertices (with size) */
 	int fcount;
 	SVECTOR *faces;
-
-	struct CP_MeshF *bone;
 } CP_MeshF;
 
 typedef struct CP_MeshT {
@@ -64,8 +62,6 @@ typedef struct CP_MeshT {
 	int ncount;
 	SVECTOR *nidxs;
 	SVECTOR *normals;
-
-	struct CP_MeshT *bone;
 } CP_MeshT;
 
 void gfxInit(void);
