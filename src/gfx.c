@@ -1,4 +1,4 @@
-/* Citypeep -- Graphics handling */
+/* Citypeep: Graphics handling */
 
 #include <stdio.h>
 
@@ -8,6 +8,8 @@
 #include <libgte.h>
 #include <libgpu.h>
 #include <libgs.h>
+
+#include <stddef.h>
 
 #include <inline_n.h>
 #include "cpu_macros.h"
@@ -27,21 +29,18 @@
 DISPENV disp[2];
 DRAWENV draw[2];
 
-static u_long ot[2][OT_LENGTH] = { { 0 } };
-static char primbuff[2][PACKET_LENGTH] = { 0 };
+static u_long ot[2][OT_LENGTH];
+static char primbuff[2][PACKET_LENGTH];
 
 static volatile u_char activeBuffer = 0;
 static char *nextPrimitive = primbuff[0];
 
-RECT screen = { 0 };
+RECT screen;
 
 int gteResult;
 
 POLY_F3 *polyf3;
 POLY_FT3 *polyft3;
-
-DR_MODE *drmode;
-RECT tws = { 0, 0, 32, 32 };
 
 static MATRIX colorMatrix = {
 	ONE * 3 / 4, 0, 0, /* Red   */
@@ -124,6 +123,12 @@ void gfxDisplay(void) {
 	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 }
 
+void gfxInitMeshF(CP_MeshF *mesh) {
+	setVector(&mesh->rot, 0, 0, 0);
+	setVector(&mesh->trans, 0, 0, 0);
+	setVector(&mesh->scale, ONE, ONE, ONE);
+}
+
 void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh) {
 	int i = 0;
 
@@ -159,8 +164,31 @@ void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh) {
 	}
 }
 
+void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to) {
+	copyVector(&to->rot, &from->rot);
+	copyVector(&to->trans, &from->trans);
+	copyVector(&to->scale, &from->scale);
+
+	to->vcount = from->vcount;
+	to->fcount = from->fcount;
+
+	to->verts = malloc3(from->vcount * sizeof(*from->verts));
+	to->verts = from->verts;
+
+	to->faces = malloc3(from->fcount * sizeof(*from->faces));
+	to->faces = from->faces;
+}
+
+void gfxInitMeshT(CP_MeshT *mesh) {
+	setVector(&mesh->rot, 0, 0, 0);
+	setVector(&mesh->trans, 0, 0, 0);
+	setVector(&mesh->scale, ONE, ONE, ONE);
+}
+
 void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 	int i = 0;
+
+	gfxInitMeshT(mesh);
 
 	u_long *loaded = sysLoadFileFromCD(PATH);
 	u_long *data = loaded;
@@ -252,6 +280,38 @@ void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
 		mesh->nidxs[i].vy = *data;
 		mesh->nidxs[i].vz = (*data++) >> 16;
 	}
+}
+
+void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to) {
+	copyVector(&to->rot, &from->rot);
+	copyVector(&to->trans, &from->trans);
+	copyVector(&to->scale, &from->scale);
+
+	to->tpage = from->tpage;
+	to->clut = from->clut;
+
+	to->vcount = from->vcount;
+	to->fcount = from->fcount;
+	to->tcount = from->tcount;
+	to->ncount = from->ncount;
+
+	to->verts = malloc3(from->vcount * sizeof(*from->verts));
+	to->verts = from->verts;
+
+	to->faces = malloc3(from->fcount * sizeof(*from->faces));
+	to->faces = from->faces;
+
+	to->uvidxs = malloc3(from->fcount * sizeof(*from->uvidxs));
+	to->uvidxs = from->uvidxs;
+
+	to->uvs = malloc3(from->tcount * sizeof(*from->uvs));
+	to->uvs = from->uvs;
+
+	to->nidxs = malloc3(from->fcount * sizeof(*from->nidxs));
+	to->nidxs = from->nidxs;
+
+	to->normals = malloc3(from->ncount * sizeof(*from->normals));
+	to->normals = from->normals;
 }
 
 static short _testClip(short x, short y) {

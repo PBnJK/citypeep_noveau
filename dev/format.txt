@@ -61,3 +61,43 @@ normals too... guh
 32 bit > Nf
 16 bit > Faces
 16 bit > UVs 
+
+Animation:
+0       7       15      23      31
+├───────┴───────┼───────┴───────┤
+│  Resolution*  │       ?       │
+├───────────────┴───────────────┤
+│     Number of frames (Nf)     │
+├───────────────────────────────┤
+│      (FRAMES START HERE)      │
+├───────────────────────────────┤
+│            ..., Nf            │
+└───────────────────────────────┘
+
+* "Ticks" per frame (1 tick = 1/60th of a second)
+
+Frame:
+0       7       15      23      31
+├───────┴───────┼───────┴───────┤
+│    Number of actions (Na)     │
+├───────────────────────────────┤
+│      (ACTIONS START HERE)     │
+├───────────────────────────────┤
+│            ..., Na            │
+└───────────────────────────────┘
+
+
+Animation action:
+0       7       15      23      31
+├───────┼───────┼───────┼───────┤
+│ BoneN │ KType │ AType │       │
+├───────┴───────┴───────┴───────┤
+│           Union of            │
+│        SVECTOR, VECTOR        │
+│       something else...       │
+└───────────────────────────────┘
+
+BoneN: Bone number
+KType: CP_KeyFType enum
+AType: CP_AnimType enum
+

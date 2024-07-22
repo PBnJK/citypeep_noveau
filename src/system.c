@@ -45,7 +45,7 @@ void sysInit(void) {
 
 	inputInit();
 
-	LOG("Everything was initialized succesfully!\n");
+	LOG("Everything was initialized succesfully!\n\n");
 }
 
 u_long *sysLoadFileFromCD(const char *FILENAME) {

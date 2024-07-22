@@ -13,7 +13,7 @@ typedef struct {
 	u_char u, v;
 } CP_UV;
 
-typedef struct {
+typedef struct CP_MeshF {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
@@ -25,9 +25,11 @@ typedef struct {
 	/* Array of indices to vertices (with size) */
 	int fcount;
 	SVECTOR *faces;
+
+	struct CP_MeshF *bone;
 } CP_MeshF;
 
-typedef struct {
+typedef struct CP_MeshT {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
@@ -54,17 +56,22 @@ typedef struct {
 	int ncount;
 	SVECTOR *nidxs;
 	SVECTOR *normals;
+
+	struct CP_MeshT *bone;
 } CP_MeshT;
 
 void gfxInit(void);
 
-void gfxPrepare(void);
 void gfxDisplay(void);
 
+void gfxInitMeshF(CP_MeshF *mesh);
 void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh);
+void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to);
 void gfxDrawMeshF(CP_MeshF *mesh);
 
+void gfxInitMeshT(CP_MeshT *mesh);
 void gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh);
+void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to);
 void gfxDrawMeshT(CP_MeshT *mesh);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

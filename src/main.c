@@ -9,8 +9,8 @@
 #include <libpad.h>
 
 #include "common.h"
+#include "actor.h"
 #include "gfx.h"
-#include "input.h"
 #include "system.h"
 
 static void _exit(void) {
@@ -19,44 +19,35 @@ static void _exit(void) {
 	StopCallback();
 }
 
+static void _test(CP_Actor *actor) {
+	static int acnt = 0;
+
+	++acnt;
+}
+
 int main(void) {
-	CP_MeshT mesh = { .rot = { 0, 0, 0, 0 },
-		.trans = { 0, 0, 120, 0 },
-		.scale = { ONE, ONE, ONE, 0 } };
+	CP_Actor actor;
 
 	LOG("=== GAME ENTERED ===\n\n");
 
 	sysInit();
 
-	gfxLoadMeshT("\\MDL\\CUBE.MF;1", "\\MDL\\TEX.TIM;1", &mesh);
+	actorInit(&actor, 3);
+
+	gfxLoadMeshT("\\MDL\\CUBE.MF;1", "\\MDL\\TEX.TIM;1", &actor.mesh[0]);
+	actor.mesh[0].trans.vz = 120;
+
+	gfxCopyMeshT(&actor.mesh[0], &actor.mesh[1]);
+	gfxCopyMeshT(&actor.mesh[0], &actor.mesh[2]);
+
+	actor.mesh[1].trans.vx -= 48;
+	actor.mesh[2].trans.vx += 48;
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
-		if( !PAD_P1.up ) {
-			mesh.rot.vx -= 16;
-		}
+		_test(&actor);
 
-		if( !PAD_P1.down ) {
-			mesh.rot.vx += 16;
-		}
-
-		if( !PAD_P1.right ) {
-			mesh.rot.vy -= 16;
-		}
-
-		if( !PAD_P1.left ) {
-			mesh.rot.vy += 16;
-		}
-
-		if( !PAD_P1.l1 ) {
-			mesh.rot.vz -= 16;
-		}
-
-		if( !PAD_P1.r1 ) {
-			mesh.rot.vz += 16;
-		}
-
-		gfxDrawMeshT(&mesh);
+		actorDraw(&actor);
 
 		gfxDisplay();
 	}

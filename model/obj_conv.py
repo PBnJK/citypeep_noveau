@@ -22,7 +22,7 @@ class Mesh:
 
     @staticmethod
     def __psx_vert(v: str) -> int:
-        return int(float(v) * 32.0)
+        return int(float(v) * 16.0)
 
     def add_vert(self, v_list: list[str]) -> None:
         self.verts.append([self.__psx_vert(v) for v in v_list])
