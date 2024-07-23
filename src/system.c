@@ -14,8 +14,9 @@
 #include "gfx.h"
 #include "input.h"
 #include "system.h"
+#include "cp_memory.h"
 
-static void _initCD(void) {
+static void cdInit(void) {
 	if( !DsInit() ) {
 		LOG("Error initializing CD!\n");
 		return;
@@ -36,14 +37,9 @@ void sysInit(void) {
 
 	ResetCallback();
 
-	EnterCriticalSection();
-	InitHeap3((void *)0x800F8000, 0x00100000);
-	ExitCriticalSection();
-
+	memInit();
 	gfxInit();
-
-	_initCD();
-
+	cdInit();
 	inputInit();
 
 	LOG("Everything was initialized succesfully!\n\n");
@@ -62,7 +58,7 @@ u_long *sysLoadFileFromCD(const char *FILENAME) {
 	}
 
 	/* Convert size of file to number of sectors and alloc space for it */
-	buf = malloc3(CALC_SECTOR_SIZE(file.size) * CD_SECTOR_SIZE);
+	buf = memAlloc(CALC_SECTOR_SIZE(file.size) * CD_SECTOR_SIZE);
 
 	/* Start read to buffer */
 	DsRead(&file.pos, (int)CALC_SECTOR_SIZE(file.size), buf, DslModeSpeed);

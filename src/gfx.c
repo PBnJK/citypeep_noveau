@@ -15,9 +15,10 @@
 #include "cpu_macros.h"
 
 #include "common.h"
+#include "cp_memory.h"
+#include "image.h"
 #include "malloc.h"
 #include "system.h"
-#include "image.h"
 
 #include "gfx.h"
 
@@ -143,8 +144,8 @@ void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh) {
 	mesh->vcount = *data++;
 	mesh->fcount = *data++;
 
-	mesh->verts = malloc3(mesh->vcount * sizeof(*mesh->verts));
-	mesh->faces = malloc3(mesh->fcount * sizeof(*mesh->faces));
+	mesh->verts = memAlloc(mesh->vcount * sizeof(*mesh->verts));
+	mesh->faces = memAlloc(mesh->fcount * sizeof(*mesh->faces));
 
 	for( ; i < mesh->vcount; ++i ) {
 		mesh->verts[i].vx = *data;
@@ -179,10 +180,10 @@ void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to) {
 	to->vcount = from->vcount;
 	to->fcount = from->fcount;
 
-	to->verts = malloc3(from->vcount * sizeof(*from->verts));
+	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
 	to->verts = from->verts;
 
-	to->faces = malloc3(from->fcount * sizeof(*from->faces));
+	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
 	to->faces = from->faces;
 }
 
@@ -221,14 +222,14 @@ u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh) {
 
 	size += 4;
 
-	mesh->verts = malloc3(mesh->vcount * sizeof(*mesh->verts));
-	mesh->faces = malloc3(mesh->fcount * sizeof(*mesh->faces));
+	mesh->verts = memAlloc(mesh->vcount * sizeof(*mesh->verts));
+	mesh->faces = memAlloc(mesh->fcount * sizeof(*mesh->faces));
 
-	mesh->uvidxs = malloc3(mesh->fcount * sizeof(*mesh->uvidxs));
-	mesh->uvs = malloc3(mesh->tcount * sizeof(*mesh->uvs));
+	mesh->uvidxs = memAlloc(mesh->fcount * sizeof(*mesh->uvidxs));
+	mesh->uvs = memAlloc(mesh->tcount * sizeof(*mesh->uvs));
 
-	mesh->nidxs = malloc3(mesh->fcount * sizeof(*mesh->nidxs));
-	mesh->normals = malloc3(mesh->ncount * sizeof(*mesh->normals));
+	mesh->nidxs = memAlloc(mesh->fcount * sizeof(*mesh->nidxs));
+	mesh->normals = memAlloc(mesh->ncount * sizeof(*mesh->normals));
 
 	for( ; i < mesh->vcount; ++i ) {
 		mesh->verts[i].vx = *data;
@@ -327,22 +328,22 @@ void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to) {
 	to->tcount = from->tcount;
 	to->ncount = from->ncount;
 
-	to->verts = malloc3(from->vcount * sizeof(*from->verts));
+	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
 	to->verts = from->verts;
 
-	to->faces = malloc3(from->fcount * sizeof(*from->faces));
+	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
 	to->faces = from->faces;
 
-	to->uvidxs = malloc3(from->fcount * sizeof(*from->uvidxs));
+	to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
 	to->uvidxs = from->uvidxs;
 
-	to->uvs = malloc3(from->tcount * sizeof(*from->uvs));
+	to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
 	to->uvs = from->uvs;
 
-	to->nidxs = malloc3(from->fcount * sizeof(*from->nidxs));
+	to->nidxs = memAlloc(from->fcount * sizeof(*from->nidxs));
 	to->nidxs = from->nidxs;
 
-	to->normals = malloc3(from->ncount * sizeof(*from->normals));
+	to->normals = memAlloc(from->ncount * sizeof(*from->normals));
 	to->normals = from->normals;
 }
 

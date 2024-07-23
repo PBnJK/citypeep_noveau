@@ -13,6 +13,10 @@
 #include "gfx.h"
 #include "system.h"
 
+/* Mostly for dev units, but whatever */
+unsigned long __ramsize = 0x00200000; /* 2MB RAM */
+unsigned long __stacksize = 0x00004000; /* 16Kb Stack */
+
 static void _exit(void) {
 	PadStopCom();
 	ResetGraph(3);

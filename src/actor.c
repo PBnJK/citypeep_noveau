@@ -4,11 +4,12 @@
 
 #include "actor.h"
 #include "gfx.h"
+#include "cp_memory.h"
 #include "system.h"
 
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->meshCount = MESH_COUNT;
-	actor->mesh = malloc3(MESH_COUNT * sizeof(*actor->mesh));
+	actor->mesh = memAlloc(MESH_COUNT * sizeof(*actor->mesh));
 
 	actor->flags.active = 1;
 	actor->flags.visible = 1;
