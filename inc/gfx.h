@@ -71,12 +71,16 @@ void gfxDisplay(void);
 void gfxInitMeshF(CP_MeshF *mesh);
 void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh);
 void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to);
+
 void gfxDrawMeshF(CP_MeshF *mesh);
 
 void gfxInitMeshT(CP_MeshT *mesh);
 u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh);
 u_int gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh);
 void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to);
+
 void gfxDrawMeshT(CP_MeshT *mesh);
+void gfxDrawMeshTNoMatrix(CP_MeshT *poly);
+void gfxDrawMeshTWithMatrix(CP_MeshT *poly, MATRIX *matrix);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

@@ -53,7 +53,7 @@ class Actor:
             elif child.tag == "trans":
                 data[TRANS_IDX] = self.__parse_vec(child.text)
             elif child.tag == "scale":
-                data[TRANS_IDX] = self.__parse_vec(child.text)
+                data[SCALE_IDX] = self.__parse_vec(child.text)
 
         self.models.append(data)
 

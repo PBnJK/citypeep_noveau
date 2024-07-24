@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <anim res="60">
-	<frame idx="0"> <!-- is elem ordering deterministic? -->
+	<frame>
 		<target idx="0">
 			<trans>0 48 120</trans>
 		</target>
@@ -13,7 +13,7 @@
 		</target>
 	</frame>
 
-	<frame idx="1">
+	<frame>
 		<target idx="0">
 			<trans>-48 48 120</trans>
 		</target>
@@ -25,7 +25,7 @@
 		</target>
 	</frame>
 
-	<frame idx="2">
+	<frame>
 		<target idx="0">
 			<trans>48 48 120</trans>
 		</target>
@@ -36,5 +36,4 @@
 			<trans>16 -48 120</trans>
 		</target>
 	</frame>
-
 </anim>

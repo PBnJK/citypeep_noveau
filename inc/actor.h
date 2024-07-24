@@ -7,6 +7,7 @@
 #include <libgpu.h>
 
 #include "gfx.h"
+#include "anim.h"
 
 typedef struct {
 	u_int active : 1;
@@ -14,7 +15,6 @@ typedef struct {
 } CP_ActorFlags;
 
 typedef struct {
-	MATRIX mat;
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
@@ -23,12 +23,20 @@ typedef struct {
 
 	u_int meshCount;
 	CP_MeshT *mesh;
+
+	u_short animCounter;
+	u_short currFrame;
+
+	CP_Anim *anim;
 } CP_Actor;
 
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
 
 void actorLoad(const char *PATH, CP_Actor *actor);
 
+void actorNextFrame(CP_Actor *actor);
+
+void actorUpdate(CP_Actor *actor);
 void actorDraw(CP_Actor *actor);
 
 #endif // !GUARD_CITYPEEP_ACTOR_H_

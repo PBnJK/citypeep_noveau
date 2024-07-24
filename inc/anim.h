@@ -8,19 +8,15 @@
 
 /* Keyframe type */
 typedef enum {
-	ROT,
-	TRANS,
-	SCALE,
-	ROT_TRANS,
-	ROT_SCALE,
-	TRANS_SCALE,
-	ROT_TRANS_SCALE,
+	K_ROT = 1,
+	K_TRANS = 2,
+	K_SCALE = 4,
 } CP_KeyFType;
 
 /* Animation type */
 typedef enum {
-	DIRECT,
-	LERP,
+	A_DIRECT,
+	A_LERP,
 } CP_AnimType;
 
 typedef struct {
@@ -29,11 +25,9 @@ typedef struct {
 	CP_KeyFType kfType;
 	CP_AnimType animType;
 
-	union {
-		SVECTOR rot;
-		VECTOR trans;
-		VECTOR scale;
-	} data;
+	SVECTOR rot;
+	VECTOR trans;
+	VECTOR scale;
 } CP_Action;
 
 /* A frame, list of actions */
@@ -51,5 +45,7 @@ typedef struct {
 	u_int frameNum;
 	CP_Frame *frames;
 } CP_Anim;
+
+void animLoad(const char *PATH, CP_Anim *anim);
 
 #endif // !GUARD_CITYPEEP_ANIM_H_

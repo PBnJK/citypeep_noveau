@@ -8,9 +8,11 @@
 #include <libgpu.h>
 #include <libpad.h>
 
+#include "anim.h"
 #include "common.h"
 #include "actor.h"
 #include "gfx.h"
+#include "input.h"
 #include "system.h"
 
 /* Mostly for dev units, but whatever */
@@ -23,12 +25,6 @@ static void _exit(void) {
 	StopCallback();
 }
 
-static void _test(CP_Actor *actor) {
-	static int acnt = 0;
-
-	++acnt;
-}
-
 int main(void) {
 	CP_Actor actor;
 
@@ -37,12 +33,24 @@ int main(void) {
 	sysInit();
 
 	actorLoad("\\ACT\\CUBOID.ACT;1", &actor);
+	animLoad("\\ANI\\TEST.ANI;1", actor.anim);
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
-		_test(&actor);
-
+		actorUpdate(&actor);
 		actorDraw(&actor);
+
+		if( !PAD_P1.up ) {
+			actor.trans.vz += 4;
+		} else if( !PAD_P1.down ) {
+			actor.trans.vz -= 4;
+		}
+
+		if( !PAD_P1.left ) {
+			actor.trans.vx -= 4;
+		} else if( !PAD_P1.right ) {
+			actor.trans.vx += 4;
+		}
 
 		gfxDisplay();
 	}

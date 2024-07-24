@@ -1,15 +1,10 @@
 /* Citypeep: Graphics handling */
 
-#include <stdio.h>
-
 #include <sys/types.h>
 
 #include <libetc.h>
 #include <libgte.h>
 #include <libgpu.h>
-#include <libgs.h>
-
-#include <stddef.h>
 
 #include <inline_n.h>
 #include "cpu_macros.h"
@@ -17,7 +12,6 @@
 #include "common.h"
 #include "cp_memory.h"
 #include "image.h"
-#include "malloc.h"
 #include "system.h"
 
 #include "gfx.h"
@@ -303,8 +297,6 @@ u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh) {
 		size += 3;
 	}
 
-	LOG("model data %d\n", *data);
-
 	return size;
 }
 
@@ -389,7 +381,7 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 }
 
 void gfxDrawMeshF(CP_MeshF *poly) {
-	MATRIX omtx;
+	MATRIX omtx, lmtx;
 	int otz;
 
 	if( !poly->flags.visible ) {
@@ -400,8 +392,12 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 	TransMatrix(&omtx, &poly->trans);
 	ScaleMatrix(&omtx, &poly->scale);
 
+	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
+
+	gte_SetLightMatrix(&lmtx);
 
 	polyf3 = (POLY_F3 *)nextPrimitive;
 
@@ -452,23 +448,7 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 }
 
 void gfxDrawMeshT(CP_MeshT *poly) {
-	MATRIX omtx, lmtx;
 	int otz;
-
-	if( !poly->flags.visible ) {
-		return;
-	}
-
-	RotMatrix_gte(&poly->rot, &omtx);
-	TransMatrix(&omtx, &poly->trans);
-	ScaleMatrix(&omtx, &poly->scale);
-
-	MulMatrix0(&lightMatrix, &omtx, &lmtx);
-
-	gte_SetRotMatrix(&omtx);
-	gte_SetTransMatrix(&omtx);
-
-	gte_SetLightMatrix(&lmtx);
 
 	polyft3 = (POLY_FT3 *)nextPrimitive;
 
@@ -492,7 +472,7 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 		gte_stotz(&otz);
 
 		otz >>= 2;
-		if( otz <= 0 || otz >= OT_LENGTH ) {
+		if( otz <= 3 || otz >= OT_LENGTH ) {
 			continue;
 		}
 
@@ -536,4 +516,42 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 	}
 
 	nextPrimitive = (char *)polyft3;
+}
+
+void gfxDrawMeshTNoMatrix(CP_MeshT *poly) {
+	MATRIX omtx, lmtx;
+	int otz;
+
+	RotMatrix_gte(&poly->rot, &omtx);
+	TransMatrix(&omtx, &poly->trans);
+	ScaleMatrix(&omtx, &poly->scale);
+
+	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+
+	gte_SetRotMatrix(&omtx);
+	gte_SetTransMatrix(&omtx);
+
+	gte_SetLightMatrix(&lmtx);
+
+	gfxDrawMeshT(poly);
+}
+
+void gfxDrawMeshTWithMatrix(CP_MeshT *poly, MATRIX *matrix) {
+	MATRIX omtx, lmtx;
+	int otz;
+
+	RotMatrix_gte(&poly->rot, &omtx);
+	TransMatrix(&omtx, &poly->trans);
+	ScaleMatrix(&omtx, &poly->scale);
+
+	CompMatrixLV(&omtx, matrix, &omtx);
+
+	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+
+	gte_SetRotMatrix(&omtx);
+	gte_SetTransMatrix(&omtx);
+
+	gte_SetLightMatrix(&lmtx);
+
+	gfxDrawMeshT(poly);
 }
