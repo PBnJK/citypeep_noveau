@@ -72,6 +72,8 @@ void gfxInitMeshF(CP_MeshF *mesh);
 void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh);
 void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to);
 
+void gfxDrawMeshFNoMatrix(CP_MeshF *poly);
+void gfxDrawMeshFWithMatrix(CP_MeshF *poly, MATRIX *matrix);
 void gfxDrawMeshF(CP_MeshF *mesh);
 
 void gfxInitMeshT(CP_MeshT *mesh);

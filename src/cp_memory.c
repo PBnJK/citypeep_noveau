@@ -35,7 +35,7 @@ void *memAlloc(const size_t BYTES) {
 	void *block = malloc3(BYTES);
 	if( !block ) {
 		LOG("=== FATAL ERROR: NULL_MALLOC ===\n");
-		LOG("malloc3(%d) returned NULL!", BYTES);
+		LOG("malloc3(%d) returned NULL!\n", BYTES);
 		exit();
 	}
 
@@ -43,4 +43,5 @@ void *memAlloc(const size_t BYTES) {
 }
 
 void memFree(void *block) {
+	free3(block);
 }

@@ -381,23 +381,7 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 }
 
 void gfxDrawMeshF(CP_MeshF *poly) {
-	MATRIX omtx, lmtx;
 	int otz;
-
-	if( !poly->flags.visible ) {
-		return;
-	}
-
-	RotMatrix_gte(&poly->rot, &omtx);
-	TransMatrix(&omtx, &poly->trans);
-	ScaleMatrix(&omtx, &poly->scale);
-
-	MulMatrix0(&lightMatrix, &omtx, &lmtx);
-
-	gte_SetRotMatrix(&omtx);
-	gte_SetTransMatrix(&omtx);
-
-	gte_SetLightMatrix(&lmtx);
 
 	polyf3 = (POLY_F3 *)nextPrimitive;
 
@@ -445,6 +429,50 @@ void gfxDrawMeshF(CP_MeshF *poly) {
 	}
 
 	nextPrimitive = (char *)polyf3;
+}
+
+void gfxDrawMeshFNoMatrix(CP_MeshF *poly) {
+	if( !poly->flags.visible ) {
+		return;
+	}
+
+	MATRIX omtx, lmtx;
+
+	RotMatrix_gte(&poly->rot, &omtx);
+	TransMatrix(&omtx, &poly->trans);
+	ScaleMatrix(&omtx, &poly->scale);
+
+	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+
+	gte_SetRotMatrix(&omtx);
+	gte_SetTransMatrix(&omtx);
+
+	gte_SetLightMatrix(&lmtx);
+
+	gfxDrawMeshF(poly);
+}
+
+void gfxDrawMeshFWithMatrix(CP_MeshF *poly, MATRIX *matrix) {
+	if( !poly->flags.visible ) {
+		return;
+	}
+
+	MATRIX omtx, lmtx;
+
+	RotMatrix_gte(&poly->rot, &omtx);
+	TransMatrix(&omtx, &poly->trans);
+	ScaleMatrix(&omtx, &poly->scale);
+
+	CompMatrixLV(&omtx, matrix, &omtx);
+
+	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+
+	gte_SetRotMatrix(&omtx);
+	gte_SetTransMatrix(&omtx);
+
+	gte_SetLightMatrix(&lmtx);
+
+	gfxDrawMeshF(poly);
 }
 
 void gfxDrawMeshT(CP_MeshT *poly) {
@@ -519,6 +547,10 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 }
 
 void gfxDrawMeshTNoMatrix(CP_MeshT *poly) {
+	if( !poly->flags.visible ) {
+		return;
+	}
+
 	MATRIX omtx, lmtx;
 	int otz;
 
@@ -537,6 +569,10 @@ void gfxDrawMeshTNoMatrix(CP_MeshT *poly) {
 }
 
 void gfxDrawMeshTWithMatrix(CP_MeshT *poly, MATRIX *matrix) {
+	if( !poly->flags.visible ) {
+		return;
+	}
+
 	MATRIX omtx, lmtx;
 	int otz;
 

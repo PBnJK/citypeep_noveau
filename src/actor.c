@@ -19,6 +19,7 @@
 
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->meshCount = MESH_COUNT;
+	LOG("mt: 1\n");
 	actor->mesh = memAlloc(MESH_COUNT * sizeof(*actor->mesh));
 
 	actor->flags.active = 1;
@@ -31,6 +32,7 @@ void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->currFrame = 0;
 	actor->animCounter = 0;
 
+	LOG("mt: 2\n");
 	actor->anim = memAlloc(sizeof(CP_Anim));
 }
 
@@ -95,7 +97,9 @@ void actorDoFrame(CP_Actor *actor, CP_Frame *frame) {
 }
 
 void actorNextFrame(CP_Actor *actor) {
-	if( (++actor->currFrame) > actor->anim->frameNum ) {
+	++actor->currFrame;
+
+	if( actor->currFrame == actor->anim->frameNum ) {
 		actor->currFrame = 0;
 	}
 

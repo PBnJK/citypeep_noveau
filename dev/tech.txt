@@ -1,0 +1,78 @@
+CLUT fog
+
+Multiple clut entries that get progressively darker/brighter/whatever and fade
+out using the p depth cueing parameter
+
+https://www.psxdev.net/forum/viewtopic.php?f=51&t=3484
+
+typedef struct {
+	u_long  *timaddr;
+	CVECTOR fog_clr;
+	u_short cdpq;
+} DPQCLUT;
+
+int clut_dpq_fog( DPQCLUT *dclut ) {
+	long stp;
+	long p,i,j;
+ 
+	TIM_IMAGE timinfo;
+	CVECTOR ccout;
+	RECT rect;
+
+	u_short *clut;
+	u_short newclut[256];
+
+	// Open TIM file
+	if (OpenTIM(dclut->timaddr) != 0)
+		return (-1);
+
+	// Read TIM file data
+	ReadTIM(&timinfo);
+
+	// Load CLUT to VRAM 
+	LoadImage(timinfo.crect, timinfo.caddr);
+	DrawSync(0);
+
+	// Transfer CLUT data to out RECT
+	rect.x = timinfo.crect->x;
+	rect.y = timinfo.crect->y;
+	rect.w = timinfo.crect->w;
+	rect.h = timinfo.crect->h;
+	clut = (u_short*)timinfo.caddr;
+
+	for (i = 0; i < dclut->cdpq; i++) {
+
+		// p = depth queue parameter
+		p = i * ONE / dclut->cdpq;
+
+		for (j = 0; j < rect.w; j++) {
+
+		    if (clut[j] == 0) { // No interpolation when transparent
+				newclut[j] = clut[j];
+		    } else {
+				// Decompose original CLUT into RGB
+				dclut->fog_clr.r = (clut[j] & 0x1f) << 3;
+				dclut->fog_clr.g = ((clut[j] >> 5) & 0x1f) << 3;
+				dclut->fog_clr.b = ((clut[j] >> 10) & 0x1f) << 3;
+				stp              = clut[j] & 0x8000;
+		
+				// Interpolate each RGB and BG color
+				gte_DpqColor(&dclut->fog_clr, p, &ccout);
+	
+				// Reconstruct CLUT with FOG
+				newclut[j] = stp | (ccout.r >> 3)
+					    		 | (((u_long)(ccout.g & 0xf8)) << 2)
+								 | (((u_long)(ccout.b & 0xf8)) << 7);
+
+		    }
+		}
+
+		rect.y = timinfo.crect->y + i;
+
+		// load to VRAM
+		LoadImage(&rect,(u_long *)newclut);
+		DrawSync(0);
+	}
+
+	return (0);
+}

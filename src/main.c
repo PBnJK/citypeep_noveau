@@ -19,15 +19,20 @@
 unsigned long __ramsize = 0x00200000; /* 2MB RAM */
 unsigned long __stacksize = 0x00004000; /* 16Kb Stack */
 
+CP_Actor actor;
+
 static void _exit(void) {
 	PadStopCom();
 	ResetGraph(3);
 	StopCallback();
 }
 
-int main(void) {
-	CP_Actor actor;
+static void _update(void) {
+	actorUpdate(&actor);
+	FntPrint("ANIM CNT: %d", actor.animCounter);
+}
 
+int main(void) {
 	LOG("=== GAME ENTERED ===\n\n");
 
 	sysInit();
@@ -35,9 +40,10 @@ int main(void) {
 	actorLoad("\\ACT\\CUBOID.ACT;1", &actor);
 	animLoad("\\ANI\\TEST.ANI;1", actor.anim);
 
+	VSyncCallback(_update);
+
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
-		actorUpdate(&actor);
 		actorDraw(&actor);
 
 		if( !PAD_P1.up ) {
