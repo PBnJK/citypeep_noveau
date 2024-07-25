@@ -22,7 +22,7 @@ typedef enum {
 typedef struct {
 	u_char bone; /* Index to target bone */
 
-	CP_KeyFType kfType;
+	u_char kfType;
 	CP_AnimType animType;
 
 	SVECTOR rot;
