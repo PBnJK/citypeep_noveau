@@ -13,6 +13,7 @@
 #include "common.h"
 #include "gfx.h"
 #include "input.h"
+#include "save.h"
 #include "system.h"
 #include "cp_memory.h"
 
@@ -37,9 +38,10 @@ void sysInit(void) {
 
 	ResetCallback();
 
-	inputInit();
-	memInit();
 	gfxInit();
+	inputInit();
+	saveInit();
+	memInit();
 	cdInit();
 
 	LOG("Everything was initialized succesfully!\n\n");

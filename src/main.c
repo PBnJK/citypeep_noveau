@@ -12,6 +12,7 @@
 #include "common.h"
 #include "actor.h"
 #include "gfx.h"
+#include "save.h"
 #include "system.h"
 
 /* For dev units with more RAM */
@@ -20,6 +21,7 @@ unsigned long __stacksize = 0x00004000; /* 16Kb Stack */
 
 static void _exit(void) {
 	PadStopCom();
+	saveExit();
 	ResetGraph(3);
 	StopCallback();
 }

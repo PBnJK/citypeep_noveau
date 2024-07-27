@@ -10,7 +10,7 @@ TODO list (in a rough top-to-bottom order of priority)
 - [ ] Base player;
 - [ ] Actor AI system;
 - [ ] Scenes;
-- [ ] Title screen (ultimate MVP;)
+- [ ] >>>> Title screen (ultimate MVP!!!)
 - [ ] Day/night system;
 - [ ] Memory card;
 - [ ] Saving the game;
