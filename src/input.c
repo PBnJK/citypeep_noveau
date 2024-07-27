@@ -8,7 +8,7 @@
 
 #include "input.h"
 
-CP_PadData padData[2];
+CP_PadData padData[2] = { 0 };
 
 void inputInit(void) {
 	PadInitDirect((u_char *)&PAD_P1, (u_char *)&PAD_P2);

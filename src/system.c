@@ -37,10 +37,10 @@ void sysInit(void) {
 
 	ResetCallback();
 
+	inputInit();
 	memInit();
 	gfxInit();
 	cdInit();
-	inputInit();
 
 	LOG("Everything was initialized succesfully!\n\n");
 }

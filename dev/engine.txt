@@ -1,0 +1,26 @@
+Idesas for engine flow
+
+* Game is composed of "Scenes" (.SCN,) which are packs of rooms, models, audio,
+  etc, probably an overlay each?
+
+* It's the job of the scene to coordinate stuff like playing music, spawning
+  actors, handling events, etc, but there is a bunch of managers for handling
+  overarching functions like loading.
+
+* Ideally, the layout of stuff is entirely deterministic. I.E when a scene
+  wants to play a tune, it should say "musPlay(10)" to play track 10, which we
+  know is the one we want, instead of "musPlay(PTR_TO_SONG_OR_WHATEVER)", since
+  that would be pretty ass.
+
+* Music is banked, and scenes load certain banks--maybe banks can be loaded mid
+  scene...?
+
+* Should actors be linked to animations, or should animation exist in a global
+  array of sorts? Animations are entirely model-independent, so maybe a fully
+  decoupled design is best.
+
+* Speaking of actors, should they *also* exist in a global array, or as weird
+  little local structs? Probably global lol...
+
+* mmm sandwitch...
+

@@ -1,0 +1,17 @@
+TODO list (in a rough top-to-bottom order of priority)
+
+- [X] Baby stuff;
+- [ ] Merge CP_MeshF and CP_MeshT into a CP_Mesh;
+- [ ] Sound;
+- [ ] Full audio handler and pipeline;
+- [ ] Scenery;
+- [ ] Dynamic menu system;
+- [ ] Actor handler;
+- [ ] Base player;
+- [ ] Actor AI system;
+- [ ] Scenes;
+- [ ] Title screen (ultimate MVP;)
+- [ ] Day/night system;
+- [ ] Memory card;
+- [ ] Saving the game;
+- [ ] Finish the whole game!! :) <-- clueless

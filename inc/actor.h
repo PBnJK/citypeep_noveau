@@ -30,13 +30,24 @@ typedef struct {
 	CP_Anim *anim;
 } CP_Actor;
 
+extern u_int gLoadedActors;
+extern CP_Actor gActors[8];
+
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
 
-void actorLoad(const char *PATH, CP_Actor *actor);
+void actorLoad(const char *PATH);
+void actorLoadInto(const char *PATH, CP_Actor *actor);
+
+void actorFreePointer(CP_Actor *actor);
+void actorFreeLast(void);
+void actorFreeAt(const u_int POSITION);
 
 void actorNextFrame(CP_Actor *actor);
 
 void actorUpdate(CP_Actor *actor);
+void actorUpdateAll(void);
+
 void actorDraw(CP_Actor *actor);
+void actorDrawAll(void);
 
 #endif // !GUARD_CITYPEEP_ACTOR_H_

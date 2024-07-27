@@ -1,6 +1,7 @@
 /* Citypeep: Actor */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 
 #include <libetc.h>
@@ -17,9 +18,13 @@
 #include "system.h"
 #include "actor.h"
 
+#define ACTOR_LIST_SIZE 8
+
+u_int gLoadedActors = 0;
+CP_Actor gActors[ACTOR_LIST_SIZE] = { 0 };
+
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->meshCount = MESH_COUNT;
-	LOG("mt: 1\n");
 	actor->mesh = memAlloc(MESH_COUNT * sizeof(*actor->mesh));
 
 	actor->flags.active = 1;
@@ -32,11 +37,20 @@ void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->currFrame = 0;
 	actor->animCounter = 0;
 
-	LOG("mt: 2\n");
 	actor->anim = memAlloc(sizeof(CP_Anim));
 }
 
-void actorLoad(const char *PATH, CP_Actor *actor) {
+void actorLoad(const char *PATH) {
+	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
+		LOG("=== FATAL ERROR: TOO_MANY_ACTORS ===\n");
+		LOG("Tried to load an actor into a full actor list!\n");
+		exit();
+	}
+
+	actorLoadInto(PATH, &gActors[gLoadedActors++]);
+}
+
+void actorLoadInto(const char *PATH, CP_Actor *actor) {
 	CP_MeshT *mesh;
 
 	u_long *loaded = sysLoadFileFromCD(PATH);
@@ -73,13 +87,50 @@ void actorLoad(const char *PATH, CP_Actor *actor) {
 	}
 }
 
+void actorFreePointer(CP_Actor *actor) {
+	actor->meshCount = 0;
+	memFree(actor->mesh);
+
+	actor->flags.active = 0;
+	actor->flags.visible = 0;
+
+	setVector(&actor->rot, 0, 0, 0);
+	setVector(&actor->trans, 0, 0, 0);
+	setVector(&actor->scale, ONE, ONE, ONE);
+
+	actor->currFrame = 0;
+	actor->animCounter = 0;
+
+	memFree(actor->anim);
+}
+
+void actorFreeLast(void) {
+	if( gLoadedActors == 0 ) {
+		LOG("=== FATAL ERROR: NO_ACTORS_TO_FREE ===\n");
+		LOG("Tried to free an actor from an empty actor list!\n");
+		exit();
+	}
+
+	actorFreePointer(&gActors[--gLoadedActors]);
+}
+
+void actorFreeAt(const u_int POSITION) {
+	if( POSITION >= gLoadedActors ) {
+		LOG("=== FATAL ERROR: NO_ACTOR_THERE ===\n");
+		LOG("Tried to free an actor from an empty position in the actor "
+			"list!\n");
+		exit();
+	}
+
+	actorFreePointer(&gActors[POSITION]);
+}
+
 void actorDoFrame(CP_Actor *actor, CP_Frame *frame) {
 	CP_Action *action;
 	CP_MeshT *mesh;
 
 	for( int i = 0; i < frame->actionNum; ++i ) {
 		action = &frame->actions[i];
-
 		mesh = &actor->mesh[action->bone];
 
 		if( action->kfType & K_ROT ) {
@@ -99,7 +150,7 @@ void actorDoFrame(CP_Actor *actor, CP_Frame *frame) {
 void actorNextFrame(CP_Actor *actor) {
 	++actor->currFrame;
 
-	if( actor->currFrame == actor->anim->frameNum ) {
+	if( actor->currFrame >= actor->anim->frameNum ) {
 		actor->currFrame = 0;
 	}
 
@@ -119,6 +170,12 @@ void actorUpdate(CP_Actor *actor) {
 	++actor->animCounter;
 }
 
+void actorUpdateAll(void) {
+	for( u_int i = 0; i < gLoadedActors; ++i ) {
+		actorUpdate(&gActors[i]);
+	}
+}
+
 void actorDraw(CP_Actor *actor) {
 	if( !actor->flags.visible ) {
 		return;
@@ -132,5 +189,11 @@ void actorDraw(CP_Actor *actor) {
 
 	for( int i = 0; i < actor->meshCount; ++i ) {
 		gfxDrawMeshTWithMatrix(&actor->mesh[i], &omtx);
+	}
+}
+
+void actorDrawAll(void) {
+	for( u_int i = 0; i < gLoadedActors; ++i ) {
+		actorDraw(&gActors[i]);
 	}
 }
