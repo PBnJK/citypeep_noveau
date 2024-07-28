@@ -219,9 +219,9 @@ class Mesh:
         print("\n7. Saving normal indices...")
 
         for n in self.nidxs:
-            file.write(n[0].to_bytes(2, byteorder="little", signed=True))
-            file.write(n[1].to_bytes(2, byteorder="little", signed=True))
-            file.write(n[2].to_bytes(2, byteorder="little", signed=True))
+            file.write(n[0].to_bytes(2, byteorder="little", signed=False))
+            file.write(n[1].to_bytes(2, byteorder="little", signed=False))
+            file.write(n[2].to_bytes(2, byteorder="little", signed=False))
 
             print(f" . Wrote {n}, 2 bytes each")
 

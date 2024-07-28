@@ -10,34 +10,29 @@
 #define PACKET_LENGTH 32768
 
 typedef struct {
-	u_char u, v;
+	u_char u;
+	u_char v;
 } CP_UV;
+
+typedef enum {
+	MT_F3,
+	MT_G3,
+	MT_FT3,
+	MT_GT3,
+} CP_MeshType;
 
 typedef struct {
 	u_int visible : 1;
 } CP_MeshFlags;
 
-typedef struct CP_MeshF {
+typedef struct CP_Mesh {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
 
-	CP_MeshFlags flags;
+	CVECTOR color;
 
-	/* Array of vertices (with size) */
-	int vcount;
-	SVECTOR *verts;
-
-	/* Array of indices to vertices (with size) */
-	int fcount;
-	SVECTOR *faces;
-} CP_MeshF;
-
-typedef struct CP_MeshT {
-	SVECTOR rot;
-	VECTOR trans;
-	VECTOR scale;
-
+	CP_MeshType type;
 	CP_MeshFlags flags;
 
 	/* Array of vertices (with size) */
@@ -62,27 +57,19 @@ typedef struct CP_MeshT {
 	int ncount;
 	SVECTOR *nidxs;
 	SVECTOR *normals;
-} CP_MeshT;
+} CP_Mesh;
 
 void gfxInit(void);
 
 void gfxDisplay(void);
 
-void gfxInitMeshF(CP_MeshF *mesh);
-void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh);
-void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to);
+void gfxInitMesh(CP_Mesh *mesh);
+u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh);
+u_int gfxLoadMesh(const char *PATH, const char *TEX, CP_Mesh *mesh);
+void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to);
 
-void gfxDrawMeshFNoMatrix(CP_MeshF *poly);
-void gfxDrawMeshFWithMatrix(CP_MeshF *poly, MATRIX *matrix);
-void gfxDrawMeshF(CP_MeshF *mesh);
-
-void gfxInitMeshT(CP_MeshT *mesh);
-u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh);
-u_int gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh);
-void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to);
-
-void gfxDrawMeshT(CP_MeshT *mesh);
-void gfxDrawMeshTNoMatrix(CP_MeshT *poly);
-void gfxDrawMeshTWithMatrix(CP_MeshT *poly, MATRIX *matrix);
+void gfxDrawMesh(CP_Mesh *mesh);
+void gfxDrawMeshNoMatrix(CP_Mesh *poly);
+void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

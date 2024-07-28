@@ -22,7 +22,7 @@ typedef struct {
 	CP_ActorFlags flags;
 
 	u_int meshCount;
-	CP_MeshT *mesh;
+	CP_Mesh *mesh;
 
 	u_short animCounter;
 	u_short currFrame;

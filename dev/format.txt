@@ -14,16 +14,18 @@ GTE works like this:
 Rot -> Trans -> Scale -> Vertices -> RTPT
 
 0       7       15      23      31
-├───────┴───────┴───────┴───────┤
+├───────┴───────┼───────┴───────┤
+│   Mesh type   │       ?       │
+├───────────────┴───────────────┤
 │ Number of vertices (Nv)       │
 ├───────────────────────────────┤
 │ Number of faces (Nf)          │
 ├───────────────────────────────┤
-│ Number of UVs (Nt)            │ # .MT only
+│ Number of UVs (Nt)            │ # FT/GT only
 ├───────────────────────────────┤
-│ Number of normals (Nn)        │ # .MT only
+│ Number of normals (Nn)        │ # FT/GT only
 ├───────────────┬───────────────┤
-│     V0.0      │     V0.1      │
+│     V0.0      │     V0.1      │ # [1]
 ├───────────────┼───────────────┤
 │     V0.3      │     V1.0      │
 ├───────────────┼───────────────┤
@@ -39,28 +41,49 @@ Rot -> Trans -> Scale -> Vertices -> RTPT
 ├───────────────┴───────────────┤
 │            ..., Nf            │
 ├───────────────┬───────────────┤
-│      U0       │      V0       │ # UV coords, .MT only
+│      U0       │      V0       │ # UV coords, FT/GT only
 ├───────────────┼───────────────┤
 │      U1       │      V1       │
 ├───────────────┴───────────────┤
 │            ..., Nt            │
 ├───────────────┬───────────────┤
-│     T0.0      │     T0.1      │ # UV indices, .MT only, same number as faces
+│     T0.0      │     T0.1      │ # UV indices, FT/GT only, same number as faces
 ├───────────────┼───────────────┤
 │     T0.3      │     T1.0      │
 ├───────────────┼───────────────┤
 │     T1.1      │     T1.1      │
 ├───────────────┴───────────────┤
 │            ..., Nf            │
+├───────────────┬───────────────┤
+│     N0.0      │     N0.1      │ # Normals, temporarily FT/GT only
+├───────────────┼───────────────┤
+│     N0.2      │     N1.0      │
+├───────────────┼───────────────┤
+│     N1.1      │     N1.2      │
+├───────────────┴───────────────┤
+│            ..., Nn            │
+├───────────────┬───────────────┤
+│     I0.0      │     I0.1      │ # Normal indices, temporarily FT/GT only, same number as faces
+├───────────────┼───────────────┤
+│     I0.3      │     I1.0      │
+├───────────────┼───────────────┤
+│     I1.1      │     I1.1      │
+├───────────────┴───────────────┤
+│            ..., Nf            │
 └───────────────────────────────┘
 
-normals too... guh
+[1]: If the mesh is gouraud shaded, we store color data after each vertex,
+     mimicking the OBJ data. Otherwise, the color data is slotted after each
+	 face.
 
 32 bit > Nv
 16 bit > Verts
 32 bit > Nf
 16 bit > Faces
+32 bit > Nt
 16 bit > UVs 
+32 bit > Nn
+16 bit > Normals
 
 Actor:
 0       7       15      23      31

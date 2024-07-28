@@ -33,10 +33,13 @@ static char *nextPrimitive = primbuff[0];
 RECT screen;
 RECT vram = { 0, 0, 1024, 512 };
 
+int otz;
 int gteResult;
 
 POLY_F3 *polyf3;
+POLY_G3 *polyg3;
 POLY_FT3 *polyft3;
+POLY_GT3 *polygt3;
 
 static MATRIX colorMatrix = {
 	ONE * 3 / 4, 0, 0, /* Red   */
@@ -121,79 +124,25 @@ void gfxDisplay(void) {
 	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 }
 
-void gfxInitMeshF(CP_MeshF *mesh) {
+void gfxInitMesh(CP_Mesh *mesh) {
 	setVector(&mesh->rot, 0, 0, 0);
 	setVector(&mesh->trans, 0, 0, 0);
 	setVector(&mesh->scale, ONE, ONE, ONE);
 
-	mesh->flags.visible = 1;
-}
-
-void gfxLoadMeshF(const char *PATH, CP_MeshF *mesh) {
-	int i = 0;
-
-	u_long *loaded = sysLoadFileFromCD(PATH);
-	u_long *data = loaded;
-
-	mesh->vcount = *data++;
-	mesh->fcount = *data++;
-
-	mesh->verts = memAlloc(mesh->vcount * sizeof(*mesh->verts));
-	mesh->faces = memAlloc(mesh->fcount * sizeof(*mesh->faces));
-
-	for( ; i < mesh->vcount; ++i ) {
-		mesh->verts[i].vx = *data;
-		mesh->verts[i].vy = (*data++) >> 16;
-		mesh->verts[i].vz = *data;
-		++i;
-
-		mesh->verts[i].vx = (*data++) >> 16;
-		mesh->verts[i].vy = *data;
-		mesh->verts[i].vz = (*data++) >> 16;
-	}
-
-	for( i = 0; i < mesh->fcount; ++i ) {
-		mesh->faces[i].vx = *data;
-		mesh->faces[i].vy = (*data++) >> 16;
-		mesh->faces[i].vz = *data;
-		++i;
-
-		mesh->faces[i].vx = (*data++) >> 16;
-		mesh->faces[i].vy = *data;
-		mesh->faces[i].vz = (*data++) >> 16;
-	}
-}
-
-void gfxCopyMeshF(CP_MeshF *from, CP_MeshF *to) {
-	copyVector(&to->rot, &from->rot);
-	copyVector(&to->trans, &from->trans);
-	copyVector(&to->scale, &from->scale);
-
-	to->flags = from->flags;
-
-	to->vcount = from->vcount;
-	to->fcount = from->fcount;
-
-	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
-	to->verts = from->verts;
-
-	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
-	to->faces = from->faces;
-}
-
-void gfxInitMeshT(CP_MeshT *mesh) {
-	setVector(&mesh->rot, 0, 0, 0);
-	setVector(&mesh->trans, 0, 0, 0);
-	setVector(&mesh->scale, ONE, ONE, ONE);
+	mesh->color.r = 128;
+	mesh->color.g = 128;
+	mesh->color.b = 128;
 
 	mesh->flags.visible = 1;
+
+	mesh->type = MT_FT3; /* TODO: remove */
 }
 
-u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh) {
+u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 	u_int size = 0;
 	int i = 0;
 
-	gfxInitMeshT(mesh);
+	gfxInitMesh(mesh);
 
 	imgLoad(TEX, &mesh->tex);
 
@@ -300,17 +249,21 @@ u_int gfxLoadMeshPtrT(u_long *data, const char *TEX, CP_MeshT *mesh) {
 	return size;
 }
 
-u_int gfxLoadMeshT(const char *PATH, const char *TEX, CP_MeshT *mesh) {
+u_int gfxLoadMesh(const char *PATH, const char *TEX, CP_Mesh *mesh) {
 	u_long *loaded = sysLoadFileFromCD(PATH);
-	return gfxLoadMeshPtrT(loaded, TEX, mesh);
+	u_int size = gfxLoadMeshPtr(loaded, TEX, mesh);
+
+	memFree(loaded);
+	return size;
 }
 
-void gfxCopyMeshT(CP_MeshT *from, CP_MeshT *to) {
+void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to) {
 	copyVector(&to->rot, &from->rot);
 	copyVector(&to->trans, &from->trans);
 	copyVector(&to->scale, &from->scale);
 
 	to->flags = from->flags;
+	to->type = from->type;
 
 	to->tpage = from->tpage;
 	to->clut = from->clut;
@@ -380,110 +333,157 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 	return 1;
 }
 
-void gfxDrawMeshF(CP_MeshF *poly) {
-	int otz;
+static void _drawPolyF3(CP_Mesh *poly, const u_int i) {
+	setPolyF3(polyf3);
 
-	polyf3 = (POLY_F3 *)nextPrimitive;
-
-	for( int i = 0; i < poly->fcount; ++i ) {
-		gte_ldv3(&poly->verts[poly->faces[i].vx],
-			&poly->verts[poly->faces[i].vy], &poly->verts[poly->faces[i].vz]);
-
-		/* Start RotTransPers of triangle */
-		gte_rtpt();
-
-		gte_nclip();
-		gte_stopz(&gteResult);
-		if( gteResult >= 0 ) {
-			continue;
-		}
-
-		gte_avsz3();
-		gte_stotz(&otz);
-
-		otz >>= 2;
-		if( otz <= 0 || otz >= OT_LENGTH ) {
-			continue;
-		}
-
-		gte_stsxy3(&polyf3->x0, &polyf3->x1, &polyf3->x2);
-		if( _testTriClip((DVECTOR *)&polyf3->x0, (DVECTOR *)&polyf3->x1,
-				(DVECTOR *)&polyf3->x2) ) {
-			continue;
-		}
-
-		setPolyF3(polyf3);
-		setRGB0(polyf3, i * 12, i * 10, 127);
-
-		/* gte_stdp(&gteResult);
-		gte_stflg(&gteResult); */
-		gte_stszotz(&gteResult);
-
-		gteResult /= 3;
-
-		if( gteResult > 0 && gteResult < OT_LENGTH ) {
-			addPrim(ot[activeBuffer] + otz, polyf3);
-		}
-
-		++polyf3;
-	}
-
-	nextPrimitive = (char *)polyf3;
-}
-
-void gfxDrawMeshFNoMatrix(CP_MeshF *poly) {
-	if( !poly->flags.visible ) {
+	gte_stsxy3(&polyf3->x0, &polyf3->x1, &polyf3->x2);
+	if( _testTriClip((DVECTOR *)&polyf3->x0, (DVECTOR *)&polyf3->x1,
+			(DVECTOR *)&polyf3->x2) ) {
 		return;
 	}
 
-	MATRIX omtx, lmtx;
+	setRGB0(polyf3, 128, 128, 128);
 
-	RotMatrix_gte(&poly->rot, &omtx);
-	TransMatrix(&omtx, &poly->trans);
-	ScaleMatrix(&omtx, &poly->scale);
+	/* gte_stdp(&gteResult);
+	gte_stflg(&gteResult); */
+	gte_stszotz(&gteResult);
 
-	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+	gteResult /= 3;
 
-	gte_SetRotMatrix(&omtx);
-	gte_SetTransMatrix(&omtx);
+	if( gteResult > 0 && gteResult < OT_LENGTH ) {
+		addPrim(ot[activeBuffer] + otz, polyf3);
+	}
 
-	gte_SetLightMatrix(&lmtx);
-
-	gfxDrawMeshF(poly);
+	++polyf3;
 }
 
-void gfxDrawMeshFWithMatrix(CP_MeshF *poly, MATRIX *matrix) {
-	if( !poly->flags.visible ) {
+static void _drawPolyG3(CP_Mesh *poly, const u_int i) {
+	setPolyG3(polyg3);
+
+	gte_stsxy3(&polyg3->x0, &polyg3->x1, &polyg3->x2);
+	if( _testTriClip((DVECTOR *)&polyg3->x0, (DVECTOR *)&polyg3->x1,
+			(DVECTOR *)&polyg3->x2) ) {
 		return;
 	}
 
-	MATRIX omtx, lmtx;
+	setRGB0(polyg3, 128, 128, 128);
+	setRGB1(polyg3, 128, 128, 128);
+	setRGB2(polyg3, 128, 128, 128);
 
-	RotMatrix_gte(&poly->rot, &omtx);
-	TransMatrix(&omtx, &poly->trans);
-	ScaleMatrix(&omtx, &poly->scale);
+	/* gte_stdp(&gteResult);
+	gte_stflg(&gteResult); */
+	gte_stszotz(&gteResult);
 
-	CompMatrixLV(&omtx, matrix, &omtx);
+	gteResult /= 3;
 
-	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+	if( gteResult > 0 && gteResult < OT_LENGTH ) {
+		addPrim(ot[activeBuffer] + otz, polyg3);
+	}
 
-	gte_SetRotMatrix(&omtx);
-	gte_SetTransMatrix(&omtx);
-
-	gte_SetLightMatrix(&lmtx);
-
-	gfxDrawMeshF(poly);
+	++polyg3;
 }
 
-void gfxDrawMeshT(CP_MeshT *poly) {
-	int otz;
+static void _drawPolyFT3(CP_Mesh *poly, const u_int i) {
+	setPolyFT3(polyft3);
 
-	polyft3 = (POLY_FT3 *)nextPrimitive;
+	gte_stsxy3(&polyft3->x0, &polyft3->x1, &polyft3->x2);
+	if( _testTriClip((DVECTOR *)&polyft3->x0, (DVECTOR *)&polyft3->x1,
+			(DVECTOR *)&polyft3->x2) ) {
+		return;
+	}
+
+	setRGB0(polyft3, 128, 128, 128);
+
+	gte_ldrgb(&polyft3->r0);
+	gte_ldv0(&poly->normals[poly->nidxs[i].vx]);
+
+	/* gte_stdp(&gteResult); */
+
+	gte_ncs();
+
+	gte_strgb(&polyft3->r0);
+
+	setUV3(polyft3, poly->uvs[poly->uvidxs[i].vx].u,
+		poly->uvs[poly->uvidxs[i].vx].v, poly->uvs[poly->uvidxs[i].vy].u,
+		poly->uvs[poly->uvidxs[i].vy].v, poly->uvs[poly->uvidxs[i].vz].u,
+		poly->uvs[poly->uvidxs[i].vz].v);
+
+	polyft3->tpage = poly->tpage;
+	polyft3->clut = poly->clut;
+
+	/*	gte_stflg(&gteResult); */
+	gte_stszotz(&gteResult);
+
+	gteResult /= 3;
+
+	if( gteResult > 0 && gteResult < OT_LENGTH ) {
+		addPrim(ot[activeBuffer] + otz, polyft3);
+	}
+
+	++polyft3;
+}
+
+static void _drawPolyGT3(CP_Mesh *poly, const u_int i) {
+	setPolyGT3(polygt3);
+
+	gte_stsxy3(&polygt3->x0, &polygt3->x1, &polygt3->x2);
+	if( _testTriClip((DVECTOR *)&polygt3->x0, (DVECTOR *)&polygt3->x1,
+			(DVECTOR *)&polygt3->x2) ) {
+		return;
+	}
+
+	setRGB0(polygt3, 128, 128, 128);
+	setRGB1(polygt3, 128, 128, 128);
+	setRGB2(polygt3, 128, 128, 128);
+
+	gte_ldrgb(&polygt3->r0);
+	gte_ldv0(&poly->normals[poly->nidxs[i].vx]);
+
+	/* gte_stdp(&gteResult); */
+
+	gte_ncs();
+
+	gte_strgb(&polygt3->r0);
+
+	setUV3(polygt3, poly->uvs[poly->uvidxs[i].vx].u,
+		poly->uvs[poly->uvidxs[i].vx].v, poly->uvs[poly->uvidxs[i].vy].u,
+		poly->uvs[poly->uvidxs[i].vy].v, poly->uvs[poly->uvidxs[i].vz].u,
+		poly->uvs[poly->uvidxs[i].vz].v);
+
+	polygt3->tpage = poly->tpage;
+	polygt3->clut = poly->clut;
+
+	/*	gte_stflg(&gteResult); */
+	gte_stszotz(&gteResult);
+
+	gteResult /= 3;
+
+	if( gteResult > 0 && gteResult < OT_LENGTH ) {
+		addPrim(ot[activeBuffer] + otz, polygt3);
+	}
+
+	++polygt3;
+}
+
+void gfxDrawMesh(CP_Mesh *poly) {
+	switch( poly->type ) {
+	case MT_F3:
+		polyf3 = (POLY_F3 *)nextPrimitive;
+		break;
+	case MT_G3:
+		polyg3 = (POLY_G3 *)nextPrimitive;
+		break;
+	case MT_FT3:
+		polyft3 = (POLY_FT3 *)nextPrimitive;
+		break;
+	case MT_GT3:
+		polygt3 = (POLY_GT3 *)nextPrimitive;
+	}
 
 	draw[0].tpage = poly->tpage;
 	draw[1].tpage = poly->tpage;
 
-	for( int i = 0; i < poly->fcount; ++i ) {
+	for( u_int i = 0; i < poly->fcount; ++i ) {
 		gte_ldv3(&poly->verts[poly->faces[i].vx],
 			&poly->verts[poly->faces[i].vy], &poly->verts[poly->faces[i].vz]);
 
@@ -504,49 +504,37 @@ void gfxDrawMeshT(CP_MeshT *poly) {
 			continue;
 		}
 
-		setPolyFT3(polyft3);
-
-		gte_stsxy3(&polyft3->x0, &polyft3->x1, &polyft3->x2);
-		if( _testTriClip((DVECTOR *)&polyft3->x0, (DVECTOR *)&polyft3->x1,
-				(DVECTOR *)&polyft3->x2) ) {
-			continue;
+		switch( poly->type ) {
+		case MT_F3:
+			_drawPolyF3(poly, i);
+			break;
+		case MT_G3:
+			_drawPolyG3(poly, i);
+			break;
+		case MT_FT3:
+			_drawPolyFT3(poly, i);
+			break;
+		case MT_GT3:
+			_drawPolyGT3(poly, i);
 		}
-
-		setRGB0(polyft3, 128, 128, 128);
-
-		gte_ldrgb(&polyft3->r0);
-		gte_ldv0(&poly->normals[poly->nidxs[i].vx]);
-
-		/* gte_stdp(&gteResult); */
-
-		gte_ncs();
-
-		gte_strgb(&polyft3->r0);
-
-		setUV3(polyft3, poly->uvs[poly->uvidxs[i].vx].u,
-			poly->uvs[poly->uvidxs[i].vx].v, poly->uvs[poly->uvidxs[i].vy].u,
-			poly->uvs[poly->uvidxs[i].vy].v, poly->uvs[poly->uvidxs[i].vz].u,
-			poly->uvs[poly->uvidxs[i].vz].v);
-
-		polyft3->tpage = poly->tpage;
-		polyft3->clut = poly->clut;
-
-		/*	gte_stflg(&gteResult); */
-		gte_stszotz(&gteResult);
-
-		gteResult /= 3;
-
-		if( gteResult > 0 && gteResult < OT_LENGTH ) {
-			addPrim(ot[activeBuffer] + otz, polyft3);
-		}
-
-		++polyft3;
 	}
 
-	nextPrimitive = (char *)polyft3;
+	switch( poly->type ) {
+	case MT_F3:
+		nextPrimitive = (char *)polyf3;
+		break;
+	case MT_G3:
+		nextPrimitive = (char *)polyg3;
+		break;
+	case MT_FT3:
+		nextPrimitive = (char *)polyft3;
+		break;
+	case MT_GT3:
+		nextPrimitive = (char *)polygt3;
+	}
 }
 
-void gfxDrawMeshTNoMatrix(CP_MeshT *poly) {
+void gfxDrawMeshNoMatrix(CP_Mesh *poly) {
 	if( !poly->flags.visible ) {
 		return;
 	}
@@ -565,10 +553,10 @@ void gfxDrawMeshTNoMatrix(CP_MeshT *poly) {
 
 	gte_SetLightMatrix(&lmtx);
 
-	gfxDrawMeshT(poly);
+	gfxDrawMesh(poly);
 }
 
-void gfxDrawMeshTWithMatrix(CP_MeshT *poly, MATRIX *matrix) {
+void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	if( !poly->flags.visible ) {
 		return;
 	}
@@ -589,5 +577,5 @@ void gfxDrawMeshTWithMatrix(CP_MeshT *poly, MATRIX *matrix) {
 
 	gte_SetLightMatrix(&lmtx);
 
-	gfxDrawMeshT(poly);
+	gfxDrawMesh(poly);
 }

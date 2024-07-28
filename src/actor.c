@@ -51,7 +51,7 @@ void actorLoad(const char *PATH) {
 }
 
 void actorLoadInto(const char *PATH, CP_Actor *actor) {
-	CP_MeshT *mesh;
+	CP_Mesh *mesh;
 
 	u_long *loaded = sysLoadFileFromCD(PATH);
 	u_long *data = loaded;
@@ -65,10 +65,10 @@ void actorLoadInto(const char *PATH, CP_Actor *actor) {
 
 		if( *data == 0xFFFFFFFF ) {
 			/* Same as previous model! */
-			gfxCopyMeshT(&actor->mesh[i - 1], mesh);
+			gfxCopyMesh(&actor->mesh[i - 1], mesh);
 			++data;
 		} else {
-			data += gfxLoadMeshPtrT(data, "\\MDL\\TEX.TIM;1", mesh);
+			data += gfxLoadMeshPtr(data, "\\MDL\\TEX.TIM;1", mesh);
 		}
 
 		/* SVECTOR (2 bytes per member) */
@@ -85,6 +85,9 @@ void actorLoadInto(const char *PATH, CP_Actor *actor) {
 		mesh->scale.vy = *data++;
 		mesh->scale.vz = *data++;
 	}
+
+	data = NULL;
+	memFree(loaded);
 }
 
 void actorFreePointer(CP_Actor *actor) {
@@ -127,7 +130,7 @@ void actorFreeAt(const u_int POSITION) {
 
 void actorDoFrame(CP_Actor *actor, CP_Frame *frame) {
 	CP_Action *action;
-	CP_MeshT *mesh;
+	CP_Mesh *mesh;
 
 	for( int i = 0; i < frame->actionNum; ++i ) {
 		action = &frame->actions[i];
@@ -188,7 +191,7 @@ void actorDraw(CP_Actor *actor) {
 	ScaleMatrix(&omtx, &actor->scale);
 
 	for( int i = 0; i < actor->meshCount; ++i ) {
-		gfxDrawMeshTWithMatrix(&actor->mesh[i], &omtx);
+		gfxDrawMeshWithMatrix(&actor->mesh[i], &omtx);
 	}
 }
 
