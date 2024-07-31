@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 
 <actor>
-	<model path="cube/cube.mt">
+	<model path="cube/cube.m">
 		<trans>0 48 120</trans>
 	</model>
 
-	<model path="cube/cube.mt">
+	<model path="cube/cube.m">
 		<trans>0 0 120</trans>
 	</model>
 
-	<model path="cube/cube.mt">
+	<model path="cube/cube.m">
 		<trans>0 -48 120</trans>
 	</model>
 </actor>

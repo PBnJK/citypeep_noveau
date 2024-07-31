@@ -13,12 +13,26 @@ class Mesh:
         self.nidxs: list[list[int]] = []
 
         self.name: str = args[1]
-        if len(args) == 3:
-            self.ext = ".mf"
-        else:
-            self.ext = ".mt"
 
-        self.output: str = self.name[:-4] + self.ext
+        self.TYPE_MAP = {
+            "f3": 0,
+            "g3": 1,
+            "ft3": 2,
+            "gt3": 3,
+        }
+
+        self.mtype: str = args[2].lower()
+        if self.mtype not in ["f3", "ft3", "g3", "gt3"]:
+            print(f"whaddaheck is a '{self.mtype}' model?!")
+            sys.exit(1)
+
+        self.output: str = self.name[:-4] + ".m"
+
+    def is_textured(self) -> bool:
+        return self.mtype in ["ft3", "gt3"]
+
+    def is_flat(self) -> bool:
+        return self.mtype in ["f3", "ft3"]
 
     @staticmethod
     def __psx_vert(v: str) -> int:
@@ -77,11 +91,20 @@ class Mesh:
         self.normals.append([self.__psx_normal(n) for n in n_list])
 
     def add_face(self, f_list: list[str]) -> None:
-        if "//" in f_list[0]:  # TODO: Deal with textureless with normals
-            f_list = [v.split("//")[0] for v in f_list]
-        elif "/" in f_list[0]:
-            self.ext = ".mt"
+        if "//" in f_list[0]:
+            f2_list = []
+            n_list = []
 
+            for v in f_list:
+                v = v.split("//")
+                f2_list.append(v[0])
+                n_list.append(v[1])
+
+            f_list = f2_list
+
+            self.add_nidxs(n_list)
+
+        elif "/" in f_list[0]:
             f2_list = []
             n_list = []
             t_list = []
@@ -119,8 +142,6 @@ class Mesh:
         return int(float(t) * 4096.0)
 
     def add_uv(self, t_list: list[str]) -> None:
-        self.ext = ".mt"
-
         self.uvs.append(
             [
                 self.__psx_uv(t_list[0]),
@@ -128,11 +149,23 @@ class Mesh:
             ]
         )
 
+    def __save_header(self, file) -> None:
+        print("0. Saving header...")
+
+        file.write(
+            self.TYPE_MAP[self.mtype].to_bytes(2, byteorder="little", signed=False)
+        )
+        print(f" . Wrote type {self.mtype} ({self.TYPE_MAP[self.mtype]}), 2 bytes")
+
+        file.write(b"\x00\x00")
+        print(" . Wrote padding, 2 bytes")
+
     def __save_count(self, file) -> None:
-        print("1. Saving count...")
+        print("\n1. Saving count...")
 
         self.vcount = len(self.verts)
         self.fcount = len(self.faces)
+        self.ncount = len(self.normals)
 
         if self.vcount % 2:
             self.verts.append([0, 0, 0])
@@ -142,29 +175,28 @@ class Mesh:
             self.faces.append([0, 0, 0])
             self.fcount += 1
 
+        if self.ncount % 2:
+            self.ncount.append([0, 0, 0])
+            self.ncount += 1
+
         file.write(self.vcount.to_bytes(4, byteorder="little", signed=False))
         print(f" . Wrote vcount {self.vcount}, 4 bytes")
 
         file.write(self.fcount.to_bytes(4, byteorder="little", signed=False))
         print(f" . Wrote fcount {self.fcount}, 4 bytes")
 
-        if self.ext == ".mt":
+        file.write(self.ncount.to_bytes(4, byteorder="little", signed=False))
+        print(f" . Wrote ncount {self.ncount}, 4 bytes")
+
+        if self.is_textured():
             self.tcount = len(self.uvs)
-            self.ncount = len(self.normals)
 
             if self.tcount % 2:
                 self.tcount.append([0, 0, 0])
                 self.tcount += 1
 
-            if self.ncount % 2:
-                self.ncount.append([0, 0, 0])
-                self.ncount += 1
-
             file.write(self.tcount.to_bytes(4, byteorder="little", signed=False))
             print(f" . Wrote tcount {self.tcount}, 4 bytes")
-
-            file.write(self.ncount.to_bytes(4, byteorder="little", signed=False))
-            print(f" . Wrote ncount {self.ncount}, 4 bytes")
 
     def __save_verts(self, file) -> None:
         print("\n2. Saving verts...")
@@ -184,7 +216,13 @@ class Mesh:
             file.write(f[1].to_bytes(2, byteorder="little", signed=False))
             file.write(f[2].to_bytes(2, byteorder="little", signed=False))
 
+            file.write((80).to_bytes(1, byteorder="little", signed=False))
+            file.write((80).to_bytes(1, byteorder="little", signed=False))
+            file.write((80).to_bytes(1, byteorder="little", signed=False))
+            file.write((0).to_bytes(1, byteorder="little", signed=False))
+
             print(f" . Wrote {f}, 2 bytes each")
+            print(f" . Wrote {b"\x80\x80\x80\x00"}")
 
     def __save_uvs(self, file) -> None:
         print("\n4. Saving UVs...")
@@ -230,16 +268,24 @@ class Mesh:
 
         # Refer to dev/format.txt for the format used here
         with open(self.output, "wb") as f:
+            self.__save_header(f)
             self.__save_count(f)
             self.__save_verts(f)
             self.__save_faces(f)
+            self.__save_normals(f)
+            self.__save_nidxs(f)
 
-            if self.ext == ".mt":
+            if self.is_textured():
                 self.__save_uvs(f)
                 self.__save_uvidxs(f)
-                self.__save_normals(f)
-                self.__save_nidxs(f)
 
+
+if len(sys.argv) != 3:
+    print("usage: python image_conv.py [obj] [type]")
+    print("- obj: The model to convert, in .OBJ file format")
+    print("- type: One of F3, FT3, G3 or GT3")
+
+    sys.exit(1)
 
 mesh = Mesh(sys.argv)
 
@@ -254,9 +300,11 @@ with open(mesh.name) as f:
             mesh.add_vert(line[1:])
         elif line[0] == "f":
             mesh.add_face(line[1:])
-        elif line[0] == "vt":
-            mesh.add_uv(line[1:])
-        elif line[0] == "vn":
-            mesh.add_normals(line[1:])
+
+        if mesh.is_textured():
+            if line[0] == "vt":
+                mesh.add_uv(line[1:])
+            elif line[0] == "vn":
+                mesh.add_normals(line[1:])
 
 mesh.save()

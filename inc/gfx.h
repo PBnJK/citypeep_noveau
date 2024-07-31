@@ -15,14 +15,15 @@ typedef struct {
 } CP_UV;
 
 typedef enum {
-	MT_F3,
-	MT_G3,
-	MT_FT3,
-	MT_GT3,
+	MT_F3 = 0,
+	MT_G3 = 1,
+	MT_FT3 = 2,
+	MT_GT3 = 3,
 } CP_MeshType;
 
 typedef struct {
 	u_int visible : 1;
+	u_int textured : 1;
 } CP_MeshFlags;
 
 typedef struct CP_Mesh {
@@ -30,7 +31,7 @@ typedef struct CP_Mesh {
 	VECTOR trans;
 	VECTOR scale;
 
-	CVECTOR color;
+	CVECTOR *color;
 
 	CP_MeshType type;
 	CP_MeshFlags flags;

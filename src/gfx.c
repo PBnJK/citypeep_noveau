@@ -1,5 +1,6 @@
 /* Citypeep: Graphics handling */
 
+#include <stdio.h>
 #include <sys/types.h>
 
 #include <libetc.h>
@@ -129,47 +130,50 @@ void gfxInitMesh(CP_Mesh *mesh) {
 	setVector(&mesh->trans, 0, 0, 0);
 	setVector(&mesh->scale, ONE, ONE, ONE);
 
-	mesh->color.r = 128;
-	mesh->color.g = 128;
-	mesh->color.b = 128;
-
 	mesh->flags.visible = 1;
-
-	mesh->type = MT_FT3; /* TODO: remove */
 }
 
 u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
-	u_int size = 0;
-	int i = 0;
+	u_int size = 4;
+	int i = 0, actualW = 0;
 
 	gfxInitMesh(mesh);
 
-	imgLoad(TEX, &mesh->tex);
+	mesh->type = *data++;
 
-	int actualW = mesh->tex.prect->w;
-	switch( mesh->tex.mode & 0x3 ) {
-	case 0:
-		actualW <<= 1;
-	case 1:
-		actualW <<= 1;
+	mesh->flags.textured = (mesh->type == MT_FT3 || mesh->type == MT_GT3);
+
+	if( mesh->flags.textured ) {
+		imgLoad(TEX, &mesh->tex);
+
+		actualW = mesh->tex.prect->w;
+		switch( mesh->tex.mode & 0x3 ) {
+		case 0:
+			actualW <<= 1;
+		case 1:
+			actualW <<= 1;
+		}
+
+		mesh->tpage = getTPage(
+			mesh->tex.mode & 0x3, 0, mesh->tex.prect->x, mesh->tex.prect->y);
+		mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
 	}
-
-	mesh->tpage = getTPage(
-		mesh->tex.mode & 0x3, 0, mesh->tex.prect->x, mesh->tex.prect->y);
-	mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
 
 	mesh->vcount = *data++;
 	mesh->fcount = *data++;
-	mesh->tcount = *data++;
 	mesh->ncount = *data++;
 
-	size += 4;
+	if( mesh->flags.textured ) {
+		mesh->tcount = *data++;
+
+		mesh->uvidxs = memAlloc(mesh->fcount * sizeof(*mesh->uvidxs));
+		mesh->uvs = memAlloc(mesh->tcount * sizeof(*mesh->uvs));
+		++size;
+	}
 
 	mesh->verts = memAlloc(mesh->vcount * sizeof(*mesh->verts));
 	mesh->faces = memAlloc(mesh->fcount * sizeof(*mesh->faces));
-
-	mesh->uvidxs = memAlloc(mesh->fcount * sizeof(*mesh->uvidxs));
-	mesh->uvs = memAlloc(mesh->tcount * sizeof(*mesh->uvs));
+	mesh->color = memAlloc(mesh->fcount * sizeof(*mesh->color));
 
 	mesh->nidxs = memAlloc(mesh->fcount * sizeof(*mesh->nidxs));
 	mesh->normals = memAlloc(mesh->ncount * sizeof(*mesh->normals));
@@ -178,6 +182,7 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 		mesh->verts[i].vx = *data;
 		mesh->verts[i].vy = (*data++) >> 16;
 		mesh->verts[i].vz = *data;
+
 		++i;
 
 		mesh->verts[i].vx = (*data++) >> 16;
@@ -191,33 +196,22 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 		mesh->faces[i].vx = *data;
 		mesh->faces[i].vy = (*data++) >> 16;
 		mesh->faces[i].vz = *data;
+
+		mesh->color[i].r = (*data) >> 16;
+		mesh->color[i].g = (*data++) >> 24;
+		mesh->color[i].b = *data;
+
 		++i;
 
 		mesh->faces[i].vx = (*data++) >> 16;
 		mesh->faces[i].vy = *data;
 		mesh->faces[i].vz = (*data++) >> 16;
 
-		size += 3;
-	}
+		mesh->color[i].r = *data;
+		mesh->color[i].g = (*data) >> 8;
+		mesh->color[i].b = (*data++) >> 16;
 
-	for( i = 0; i < mesh->tcount; ++i ) {
-		mesh->uvs[i].u = (actualW * (*data)) / 4096;
-		mesh->uvs[i].v = (mesh->tex.prect->h * ((*data++) >> 16)) / 4096;
-
-		++size;
-	}
-
-	for( i = 0; i < mesh->fcount; ++i ) {
-		mesh->uvidxs[i].vx = *data;
-		mesh->uvidxs[i].vy = (*data++) >> 16;
-		mesh->uvidxs[i].vz = *data;
-		++i;
-
-		mesh->uvidxs[i].vx = (*data++) >> 16;
-		mesh->uvidxs[i].vy = *data;
-		mesh->uvidxs[i].vz = (*data++) >> 16;
-
-		size += 3;
+		size += 5;
 	}
 
 	for( i = 0; i < mesh->ncount; ++i ) {
@@ -244,6 +238,28 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 		mesh->nidxs[i].vz = (*data++) >> 16;
 
 		size += 3;
+	}
+
+	if( mesh->flags.textured ) {
+		for( i = 0; i < mesh->tcount; ++i ) {
+			mesh->uvs[i].u = (actualW * (*data)) / 4096;
+			mesh->uvs[i].v = (mesh->tex.prect->h * ((*data++) >> 16)) / 4096;
+
+			++size;
+		}
+
+		for( i = 0; i < mesh->fcount; ++i ) {
+			mesh->uvidxs[i].vx = *data;
+			mesh->uvidxs[i].vy = (*data++) >> 16;
+			mesh->uvidxs[i].vz = *data;
+			++i;
+
+			mesh->uvidxs[i].vx = (*data++) >> 16;
+			mesh->uvidxs[i].vy = *data;
+			mesh->uvidxs[i].vz = (*data++) >> 16;
+
+			size += 3;
+		}
 	}
 
 	return size;
@@ -273,23 +289,31 @@ void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to) {
 	to->tcount = from->tcount;
 	to->ncount = from->ncount;
 
+	LOG("1\n");
 	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
 	to->verts = from->verts;
 
+	LOG("1\n");
 	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
 	to->faces = from->faces;
 
-	to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
-	to->uvidxs = from->uvidxs;
-
-	to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
-	to->uvs = from->uvs;
-
+	LOG("1\n");
 	to->nidxs = memAlloc(from->fcount * sizeof(*from->nidxs));
 	to->nidxs = from->nidxs;
 
+	LOG("1\n\n");
 	to->normals = memAlloc(from->ncount * sizeof(*from->normals));
 	to->normals = from->normals;
+
+	if( from->flags.textured ) {
+		LOG("1\n");
+		to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
+		to->uvidxs = from->uvidxs;
+
+		LOG("1\n\n");
+		to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
+		to->uvs = from->uvs;
+	}
 }
 
 static short _testClip(short x, short y) {
