@@ -6,13 +6,11 @@
 #include <libgte.h>
 #include <libgpu.h>
 
+#include "math.h"
+#include "text.h"
+
 #define OT_LENGTH 2048
 #define PACKET_LENGTH 32768
-
-typedef struct {
-	u_char u;
-	u_char v;
-} CP_UV;
 
 typedef enum {
 	MT_F3 = 0,
@@ -72,5 +70,9 @@ void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to);
 void gfxDrawMesh(CP_Mesh *mesh);
 void gfxDrawMeshNoMatrix(CP_Mesh *poly);
 void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix);
+
+void gfxDrawFont(CP_Font *font, u_short x, u_short y);
+
+void gfxSetTPage(u_short tpage);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

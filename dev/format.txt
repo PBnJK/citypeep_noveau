@@ -73,7 +73,7 @@ Rot -> Trans -> Scale -> Vertices -> RTPT
 └───────────────────────────────┘
 
 [1]: If the mesh is gouraud shaded, we store color data after each vertex,
-     mimicking the OBJ data. Otherwise, the color data is slotted after each
+     mimicking the OBJ data. Otherwise, the color data is stored after each
 	 face.
 
 32 bit > Nv

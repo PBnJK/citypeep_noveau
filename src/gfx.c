@@ -42,6 +42,12 @@ POLY_G3 *polyg3;
 POLY_FT3 *polyft3;
 POLY_GT3 *polygt3;
 
+SPRT *sprt;
+SPRT_8 *sprt8;
+SPRT_16 *sprt16;
+
+DR_TPAGE *dr_tpage;
+
 static MATRIX colorMatrix = {
 	ONE * 3 / 4, 0, 0, /* Red   */
 	ONE * 3 / 4, 0, 0, /* Green */
@@ -602,4 +608,35 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	gte_SetLightMatrix(&lmtx);
 
 	gfxDrawMesh(poly);
+}
+
+void gfxDrawSprite(void) {
+}
+
+void gfxDrawFont(CP_Font *font, u_short x, u_short y) {
+	sprt = (SPRT *)nextPrimitive;
+
+	setSprt(sprt);
+
+	setXY0(sprt, x, y);
+	setUV0(sprt, font->uv.u, font->uv.v);
+	setRGB0(sprt, 127, 127, 127);
+	setWH(sprt, font->cw, font->ch);
+
+	sprt->clut = font->clut;
+
+	addPrim(&ot[activeBuffer], sprt);
+	++sprt;
+
+	nextPrimitive = (char *)sprt;
+}
+
+void gfxSetTPage(u_short tpage) {
+	dr_tpage = (DR_TPAGE *)nextPrimitive;
+	setDrawTPage(dr_tpage, 0, 1, tpage);
+
+	addPrim(ot[activeBuffer], dr_tpage);
+	++dr_tpage;
+
+	nextPrimitive = (char *)dr_tpage;
 }

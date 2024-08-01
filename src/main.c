@@ -14,6 +14,7 @@
 #include "gfx.h"
 #include "save.h"
 #include "system.h"
+#include "text.h"
 
 /* For dev units with more RAM */
 unsigned long __ramsize = 0x00200000; /* 2MB RAM */
@@ -36,18 +37,22 @@ static void _exit(void) {
 }
 
 int main(void) {
+	CP_Font font;
+
 	LOG("=== GAME ENTERED ===\n\n");
 
 	sysInit();
 
 	actorLoad("\\ACT\\CUBOID.ACT;1");
 	animLoad("\\ANI\\TEST.ANI;1", gActors[0].anim);
+	textInitFont(&font, "\\FNT\\SERIF.TIM;1", 8, 8);
 
 	/* Update on VSync, since it's time sensitive */
 	VSyncCallback(_vsyncUpdate);
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
+		textDraw(&font, 8, 8, "My arse?");
 		_draw();
 	}
 

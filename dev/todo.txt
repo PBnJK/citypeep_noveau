@@ -1,7 +1,8 @@
 TODO list (in a rough top-to-bottom order of priority)
 
 - [X] Baby stuff;
-- [ ] Merge CP_MeshF and CP_MeshT into a CP_Mesh;
+- [X] Merge CP_MeshF and CP_MeshT into a CP_Mesh;
+- [ ] Dialogue system;
 - [ ] Sound;
 - [ ] Full audio handler and pipeline;
 - [ ] Scenery;
