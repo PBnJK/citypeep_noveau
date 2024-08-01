@@ -13,6 +13,7 @@
 #include "common.h"
 #include "cp_memory.h"
 #include "image.h"
+#include "sprite.h"
 #include "system.h"
 
 #include "gfx.h"
@@ -98,11 +99,6 @@ void gfxInit(void) {
 	nextPrimitive = primbuff[activeBuffer];
 	ClearOTagR(ot[activeBuffer], OT_LENGTH);
 
-#ifdef DEBUG
-	FntLoad(960, 0);
-	FntOpen(32, 32, SCR_WIDTH, SCR_HEIGHT, 0, 256);
-#endif
-
 	/* Turn on drawing! */
 	SetDispMask(1);
 }
@@ -113,10 +109,6 @@ void gfxDisplay(void) {
 	 */
 	DrawSync(0);
 	VSync(0);
-
-#ifdef DEBUG
-	FntFlush(-1);
-#endif
 
 	/* Update disp & draw environments */
 	PutDispEnv(&disp[activeBuffer]);
@@ -610,7 +602,20 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	gfxDrawMesh(poly);
 }
 
-void gfxDrawSprite(void) {
+void gfxDrawSprite(CP_Sprite *spr) {
+	sprt = (SPRT *)nextPrimitive;
+	setSprt(sprt);
+
+	setXY0(sprt, spr->x, spr->y);
+	setWH(sprt, spr->w, spr->h);
+	setUV0(sprt, spr->uv.u, spr->uv.v);
+	setRGB0(sprt, spr->col.r, spr->col.g, spr->col.b);
+	sprt->clut = spr->clut;
+
+	addPrim(&ot[activeBuffer], sprt);
+	nextPrimitive += sizeof(SPRT);
+
+	gfxSetTPage(spr->tpage);
 }
 
 void gfxDrawFont(CP_Font *font, u_short x, u_short y) {

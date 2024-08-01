@@ -2,7 +2,6 @@
     <properties buffer_res="1" buffer_order="0"/>
     <tim_group name="global">
         <tim file=""/>
-        <tim file=""/>
         <tim file="" source="">
             <import_parameters>
                 <target_bpp>4</target_bpp>
@@ -13,5 +12,6 @@
                 <transparency_mode>0</transparency_mode>
             </import_parameters>
         </tim>
+        <tim file=""/>
     </tim_group>
 </tim_project>

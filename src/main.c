@@ -12,6 +12,7 @@
 #include "common.h"
 #include "actor.h"
 #include "gfx.h"
+#include "menu.h"
 #include "save.h"
 #include "system.h"
 #include "text.h"
@@ -45,14 +46,14 @@ int main(void) {
 
 	actorLoad("\\ACT\\CUBOID.ACT;1");
 	animLoad("\\ANI\\TEST.ANI;1", gActors[0].anim);
-	textInitFont(&font, "\\FNT\\BIG.TIM;1", 10, 12);
 
 	/* Update on VSync, since it's time sensitive */
 	VSyncCallback(_vsyncUpdate);
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
-		textDraw(&font, 8, 8, "My arse?");
+		menuDrawText(FNT_SMALL, 0, 0, "Cool beans\n");
+		menuDrawBox(32, 8, 6, 8);
 		_draw();
 	}
 
