@@ -45,7 +45,7 @@ int main(void) {
 
 	actorLoad("\\ACT\\CUBOID.ACT;1");
 	animLoad("\\ANI\\TEST.ANI;1", gActors[0].anim);
-	textInitFont(&font, "\\FNT\\SERIF.TIM;1", 8, 8);
+	textInitFont(&font, "\\FNT\\BIG.TIM;1", 10, 12);
 
 	/* Update on VSync, since it's time sensitive */
 	VSyncCallback(_vsyncUpdate);

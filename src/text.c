@@ -63,11 +63,10 @@ void textDraw(CP_Font *font, u_char x, u_char y, const char *TEXT) {
 			y += font->ch;
 			break;
 		case ' ': /* Skip whitespace */
-		case '\r':
 			x += font->cw;
 			break;
 		default:
-			c -= 32;
+			c -= 33;
 
 			font->uv.u = font->cw * (c % font->cr);
 			font->uv.u += font->baseUV.u;
