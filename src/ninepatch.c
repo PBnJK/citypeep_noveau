@@ -36,5 +36,6 @@ void ninePatchDraw(CP_Sprite *np, u_char x, u_char y, u_char w, u_char h) {
 		}
 	}
 
+	gfxSetTPage(np->tpage);
 	np->uv.v = np->baseuv.v;
 }

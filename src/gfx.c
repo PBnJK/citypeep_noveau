@@ -614,8 +614,6 @@ void gfxDrawSprite(CP_Sprite *spr) {
 
 	addPrim(&ot[activeBuffer], sprt);
 	nextPrimitive += sizeof(SPRT);
-
-	gfxSetTPage(spr->tpage);
 }
 
 void gfxDrawFont(CP_Font *font, u_short x, u_short y) {
