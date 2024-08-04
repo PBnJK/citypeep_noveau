@@ -35,12 +35,12 @@ extern CP_Actor gActors[8];
 
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
 
-void actorLoad(const char *PATH);
+u_int actorLoad(const char *PATH);
 void actorLoadInto(const char *PATH, CP_Actor *actor);
 
 void actorFreePointer(CP_Actor *actor);
-void actorFreeLast(void);
-void actorFreeAt(const u_int POSITION);
+u_int actorFreeLast(void);
+u_int actorFreeAt(const u_int POSITION);
 
 void actorNextFrame(CP_Actor *actor);
 

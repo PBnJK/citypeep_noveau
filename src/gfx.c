@@ -44,8 +44,6 @@ POLY_FT3 *polyft3;
 POLY_GT3 *polygt3;
 
 SPRT *sprt;
-SPRT_8 *sprt8;
-SPRT_16 *sprt16;
 
 DR_TPAGE *dr_tpage;
 
@@ -287,28 +285,22 @@ void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to) {
 	to->tcount = from->tcount;
 	to->ncount = from->ncount;
 
-	LOG("1\n");
 	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
 	to->verts = from->verts;
 
-	LOG("1\n");
 	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
 	to->faces = from->faces;
 
-	LOG("1\n");
 	to->nidxs = memAlloc(from->fcount * sizeof(*from->nidxs));
 	to->nidxs = from->nidxs;
 
-	LOG("1\n\n");
 	to->normals = memAlloc(from->ncount * sizeof(*from->normals));
 	to->normals = from->normals;
 
 	if( from->flags.textured ) {
-		LOG("1\n");
 		to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
 		to->uvidxs = from->uvidxs;
 
-		LOG("1\n\n");
 		to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
 		to->uvs = from->uvs;
 	}
@@ -613,24 +605,24 @@ void gfxDrawSprite(CP_Sprite *spr) {
 	sprt->clut = spr->clut;
 
 	addPrim(&ot[activeBuffer], sprt);
-	nextPrimitive += sizeof(SPRT);
+
+	++sprt;
+	nextPrimitive = (char *)sprt;
 }
 
 void gfxDrawFont(CP_Font *font, u_short x, u_short y) {
 	sprt = (SPRT *)nextPrimitive;
-
 	setSprt(sprt);
 
 	setXY0(sprt, x, y);
 	setUV0(sprt, font->uv.u, font->uv.v);
 	setRGB0(sprt, 127, 127, 127);
 	setWH(sprt, font->cw, font->ch);
-
 	sprt->clut = font->clut;
 
 	addPrim(&ot[activeBuffer], sprt);
-	++sprt;
 
+	++sprt;
 	nextPrimitive = (char *)sprt;
 }
 

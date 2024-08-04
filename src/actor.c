@@ -1,6 +1,5 @@
 /* Citypeep: Actor */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
@@ -11,7 +10,6 @@
 
 #include <inline_n.h>
 
-#include "common.h"
 #include "anim.h"
 #include "gfx.h"
 #include "cp_memory.h"
@@ -40,14 +38,13 @@ void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->anim = memAlloc(sizeof(CP_Anim));
 }
 
-void actorLoad(const char *PATH) {
+u_int actorLoad(const char *PATH) {
 	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
-		LOG("=== FATAL ERROR: TOO_MANY_ACTORS ===\n");
-		LOG("Tried to load an actor into a full actor list!\n");
-		exit();
+		return 1;
 	}
 
 	actorLoadInto(PATH, &gActors[gLoadedActors++]);
+	return 0;
 }
 
 void actorLoadInto(const char *PATH, CP_Actor *actor) {
@@ -107,25 +104,22 @@ void actorFreePointer(CP_Actor *actor) {
 	memFree(actor->anim);
 }
 
-void actorFreeLast(void) {
+u_int actorFreeLast(void) {
 	if( gLoadedActors == 0 ) {
-		LOG("=== FATAL ERROR: NO_ACTORS_TO_FREE ===\n");
-		LOG("Tried to free an actor from an empty actor list!\n");
-		exit();
+		return 1;
 	}
 
 	actorFreePointer(&gActors[--gLoadedActors]);
+	return 0;
 }
 
-void actorFreeAt(const u_int POSITION) {
+u_int actorFreeAt(const u_int POSITION) {
 	if( POSITION >= gLoadedActors ) {
-		LOG("=== FATAL ERROR: NO_ACTOR_THERE ===\n");
-		LOG("Tried to free an actor from an empty position in the actor "
-			"list!\n");
-		exit();
+		return 1;
 	}
 
 	actorFreePointer(&gActors[POSITION]);
+	return 0;
 }
 
 void actorDoFrame(CP_Actor *actor, CP_Frame *frame) {

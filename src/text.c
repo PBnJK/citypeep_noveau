@@ -36,14 +36,6 @@ void textInitFont(CP_Font *font, const char *PATH, u_char cw, u_char ch) {
 	font->uv.v = img.prect->y & 0xff;
 
 	font->baseUV = font->uv;
-
-	LOG("Loaded font '%s'. INFO:\n"
-		"* Characters: %d\n"
-		"* UV: %d, %d\n"
-		"* Char. WH: %d, %d\n"
-		"* Char. per R/C: %d, %d\n\n",
-		PATH, font->cr * font->cc, font->uv.u, font->uv.v, font->cw, font->ch,
-		font->cr, font->cc);
 }
 
 void textDraw(CP_Font *font, u_char x, u_char y, const char *TEXT) {
