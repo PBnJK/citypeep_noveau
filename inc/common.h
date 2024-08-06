@@ -19,4 +19,9 @@ typedef int bool;
 #define SCR_HEIGHT 240
 #define SCR_CENTER_HEIGHT (SCR_HEIGHT / 2)
 
+/* Swap endianness (Little -> Big) */
+#define LTOB32(x)                                                              \
+	(((x) >> 24) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0x00FF0000)           \
+		| ((x) << 24))
+
 #endif // !GUARD_CITYPEEP_COMMON_H_

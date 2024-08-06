@@ -11,6 +11,7 @@
 #include <malloc.h>
 
 #include "common.h"
+#include "audio.h"
 #include "gfx.h"
 #include "input.h"
 #include "menu.h"
@@ -44,6 +45,7 @@ void sysInit(void) {
 	saveInit();
 	memInit();
 	cdInit();
+	audioInit();
 	menuInit();
 
 	LOG("Everything was initialized succesfully!\n\n");

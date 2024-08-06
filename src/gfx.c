@@ -35,17 +35,17 @@ static char *nextPrimitive = primbuff[0];
 RECT screen;
 RECT vram = { 0, 0, 1024, 512 };
 
-int otz;
-int gteResult;
+static int otz;
+static int gteResult;
 
-POLY_F3 *polyf3;
-POLY_G3 *polyg3;
-POLY_FT3 *polyft3;
-POLY_GT3 *polygt3;
+static POLY_F3 *polyf3;
+static POLY_G3 *polyg3;
+static POLY_FT3 *polyft3;
+static POLY_GT3 *polygt3;
 
-SPRT *sprt;
+static SPRT *sprt;
 
-DR_TPAGE *dr_tpage;
+static DR_TPAGE *dr_tpage;
 
 static MATRIX colorMatrix = {
 	ONE * 3 / 4, 0, 0, /* Red   */
@@ -348,6 +348,8 @@ static int _testTriClip(DVECTOR *v0, DVECTOR *v1, DVECTOR *v2) {
 }
 
 static void _drawPolyF3(CP_Mesh *poly, const u_int i) {
+	u_long otc = 0;
+
 	setPolyF3(polyf3);
 
 	gte_stsxy3(&polyf3->x0, &polyf3->x1, &polyf3->x2);
@@ -360,8 +362,8 @@ static void _drawPolyF3(CP_Mesh *poly, const u_int i) {
 
 	/* gte_stdp(&gteResult);
 	gte_stflg(&gteResult); */
-	gte_stszotz(&gteResult);
 
+	gte_stszotz(&gteResult);
 	gteResult /= 3;
 
 	if( gteResult > 0 && gteResult < OT_LENGTH ) {

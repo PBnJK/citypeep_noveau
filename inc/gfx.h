@@ -10,7 +10,9 @@
 #include "sprite.h"
 #include "text.h"
 
-#define OT_LENGTH 2048
+#define OT_PRECISION 11
+#define OT_LENGTH (1 << OT_PRECISION)
+
 #define PACKET_LENGTH 32768
 
 typedef enum {
