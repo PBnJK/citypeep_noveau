@@ -7,6 +7,7 @@
 #define CALC_SECTOR_SIZE(LEN) (((LEN) + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE)
 
 void sysInit(void);
+void sysExit(void);
 
 u_long *sysLoadFileFromCD(const char *FILENAME);
 

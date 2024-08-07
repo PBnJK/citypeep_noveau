@@ -1,13 +1,14 @@
 /* Citypeep -- System functions */
 
 #include <stdio.h>
-
 #include <sys/types.h>
+
 #include <libds.h>
 #include <libetc.h>
 #include <libgte.h>
 #include <libgpu.h>
 #include <libapi.h>
+#include <libpad.h>
 #include <malloc.h>
 
 #include "common.h"
@@ -49,6 +50,16 @@ void sysInit(void) {
 	menuInit();
 
 	LOG("Everything was initialized succesfully!\n\n");
+}
+
+void sysExit(void) {
+	PadStopCom();
+
+	saveExit();
+	audioExit();
+
+	ResetGraph(3);
+	StopCallback();
 }
 
 u_long *sysLoadFileFromCD(const char *FILENAME) {

@@ -17,12 +17,15 @@ typedef struct {
 } CP_VAGHeader;
 
 void audioInit(void);
+void audioExit(void);
 
 void audioSetDefaultVoiceAttr(u_int pitch, int channel, u_int addr);
 
 u_int audioUploadSample(void *data, u_int size);
 u_int audioLoadSample(void *data, u_int channel);
 u_int audioLoadAt(const char *PATH, u_int channel);
+
+void audioFreeChannel(u_int channel);
 
 void audioPlay(u_int channels);
 void audioStop(u_int channels);

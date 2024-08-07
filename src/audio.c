@@ -15,9 +15,15 @@ void audioInit(void) {
 	SpuInitMalloc(SPU_MALLOC_MAX, spuMallocTable);
 
 	cattr.mask = SPU_COMMON_MVOLL | SPU_COMMON_MVOLR;
-	cattr.mvol.left = 0x3fff;
-	cattr.mvol.right = 0x3fff;
+	cattr.mvol.left = 0x3FFF;
+	cattr.mvol.right = 0x3FFF;
 	SpuSetCommonAttr(&cattr);
+}
+
+void audioExit(void) {
+	for( u_int i = 0; i < 24; ++i ) {
+		audioFreeChannel(0x1L << i);
+	}
 }
 
 void audioSetDefaultVoiceAttr(u_int pitch, int channel, u_int addr) {
@@ -36,11 +42,13 @@ void audioSetDefaultVoiceAttr(u_int pitch, int channel, u_int addr) {
 
 	vattr.s_mode = SPU_VOICE_LINEARIncN;
 	vattr.r_mode = SPU_VOICE_LINEARDecN;
+
 	vattr.ar = 0x0;
 	vattr.dr = 0x0;
 	vattr.rr = 0x0;
 	vattr.sr = 0x0;
-	vattr.sl = 0xf;
+	vattr.sl = 0xF;
+
 	SpuSetVoiceAttr(&vattr);
 }
 
@@ -72,6 +80,15 @@ u_int audioLoadSample(void *data, u_int channel) {
 u_int audioLoadAt(const char *PATH, u_int channel) {
 	u_long *data = sysLoadFileFromCD(PATH);
 	return audioLoadSample((void *)data, channel);
+}
+
+void audioFreeChannel(u_int channel) {
+	u_long addr;
+
+	SpuGetVoiceStartAddr(channel, &addr);
+	if( addr >= 0x1010 ) {
+		SpuFree(addr);
+	}
 }
 
 void audioPlay(u_int channels) {
