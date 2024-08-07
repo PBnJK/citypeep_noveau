@@ -25,6 +25,7 @@ typedef enum {
 typedef struct {
 	u_int visible : 1;
 	u_int textured : 1;
+	u_int gouraud : 1;
 } CP_MeshFlags;
 
 typedef struct CP_Mesh {
@@ -32,16 +33,18 @@ typedef struct CP_Mesh {
 	VECTOR trans;
 	VECTOR scale;
 
-	CVECTOR *color;
-
 	CP_MeshType type;
 	CP_MeshFlags flags;
 
-	/* Array of vertices (with size) */
+	/* Array of vertices */
 	int vcount;
 	SVECTOR *verts;
 
-	/* Array of indices to vertices (with size) */
+	/* Array of colors */
+	int ccount;
+	CVECTOR *colors;
+
+	/* Array of indices to vertices */
 	int fcount;
 	SVECTOR *faces;
 

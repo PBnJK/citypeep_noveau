@@ -1,18 +1,24 @@
 /* Citypeep: audio handler */
 
+#include <libsnd.h>
 #include <libspu.h>
 
 #include "common.h"
 #include "audio.h"
 #include "system.h"
 
-static char spuMallocTable[SPU_MALLOC_RECSIZ * (SPU_MALLOC_MAX + 1)];
-
 static SpuCommonAttr cattr = { 0 };
 
 void audioInit(void) {
-	SpuInit();
-	SpuInitMalloc(SPU_MALLOC_MAX, spuMallocTable);
+	SsInit();
+
+	/* Stop boot-up chime */
+	SsUtSetReverbDepth(0, 0);
+	SsUtReverbOff();
+	SpuClearReverbWorkArea(SPU_REV_MODE_OFF);
+
+	SsSetTickMode(SS_TICK60);
+	SsStart2();
 
 	cattr.mask = SPU_COMMON_MVOLL | SPU_COMMON_MVOLR;
 	cattr.mvol.left = 0x3FFF;
@@ -21,6 +27,8 @@ void audioInit(void) {
 }
 
 void audioExit(void) {
+	SsEnd();
+
 	for( u_int i = 0; i < 24; ++i ) {
 		audioFreeChannel(0x1L << i);
 	}

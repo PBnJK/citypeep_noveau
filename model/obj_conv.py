@@ -6,6 +6,7 @@ import sys
 class Mesh:
     def __init__(self, args: str) -> None:
         self.verts: list[list[int]] = []
+        self.vcolors: list[list[int]] = []
         self.faces: list[list[int]] = []
         self.uvs: list[list[int]] = []
         self.uvidxs: list[list[int]] = []
@@ -34,12 +35,31 @@ class Mesh:
     def is_flat(self) -> bool:
         return self.mtype in ["f3", "ft3"]
 
+    def is_gouraud(self) -> bool:
+        return not self.is_flat()
+
     @staticmethod
     def __psx_vert(v: str) -> int:
-        return int(float(v) * 16.0)
+        return int(float(v) * 16.0)  # TODO: make scale controllable
+
+    @staticmethod
+    def __psx_color(c: str) -> int:
+        return int(float(c) * 255.0)  # 0-1 > 0-255
 
     def add_vert(self, v_list: list[str]) -> None:
-        self.verts.append([self.__psx_vert(v) for v in v_list])
+        if self.is_flat():
+            self.verts.append([self.__psx_vert(v) for v in v_list])
+            return
+
+        if len(v_list) != 6:
+            print(f"Bad v_list {v_list}, has no vertex colors!")
+            sys.exit(1)
+
+        vert_list: list[str] = v_list[:3]
+        self.verts.append([self.__psx_vert(v) for v in vert_list])
+
+        color_list: list[str] = v_list[3:]
+        self.vcolors.append([self.__psx_color(c) for c in color_list])
 
     @staticmethod
     def __psx_face(f: str) -> int:
@@ -176,7 +196,7 @@ class Mesh:
             self.fcount += 1
 
         if self.ncount % 2:
-            self.ncount.append([0, 0, 0])
+            self.normals.append([0, 0, 0])
             self.ncount += 1
 
         file.write(self.vcount.to_bytes(4, byteorder="little", signed=False))
@@ -201,12 +221,21 @@ class Mesh:
     def __save_verts(self, file) -> None:
         print("\n2. Saving verts...")
 
-        for v in self.verts:
+        for count, v in enumerate(self.verts):
             file.write(v[0].to_bytes(2, byteorder="little", signed=True))
             file.write(v[1].to_bytes(2, byteorder="little", signed=True))
             file.write(v[2].to_bytes(2, byteorder="little", signed=True))
 
             print(f" . Wrote {v}, 2 bytes each")
+
+            if self.is_gouraud():
+                c = self.vcolors[count]
+                file.write(c[0].to_bytes(1, byteorder="little", signed=False))
+                file.write(c[1].to_bytes(1, byteorder="little", signed=False))
+                file.write(c[2].to_bytes(1, byteorder="little", signed=False))
+                file.write((0).to_bytes(1, byteorder="little", signed=False))
+
+                print(f" . Wrote color {c} + 0, 1 byte each")
 
     def __save_faces(self, file) -> None:
         print("\n3. Saving faces...")
@@ -216,13 +245,14 @@ class Mesh:
             file.write(f[1].to_bytes(2, byteorder="little", signed=False))
             file.write(f[2].to_bytes(2, byteorder="little", signed=False))
 
-            file.write((80).to_bytes(1, byteorder="little", signed=False))
-            file.write((80).to_bytes(1, byteorder="little", signed=False))
-            file.write((80).to_bytes(1, byteorder="little", signed=False))
-            file.write((0).to_bytes(1, byteorder="little", signed=False))
+            if self.is_flat():
+                file.write((80).to_bytes(1, byteorder="little", signed=False))
+                file.write((80).to_bytes(1, byteorder="little", signed=False))
+                file.write((80).to_bytes(1, byteorder="little", signed=False))
+                file.write((0).to_bytes(1, byteorder="little", signed=False))
 
-            print(f" . Wrote {f}, 2 bytes each")
-            print(f" . Wrote {b"\x80\x80\x80\x00"}")
+                print(f" . Wrote {f}, 2 bytes each")
+                print(f" . Wrote {b"\x80\x80\x80\x00"}")
 
     def __save_uvs(self, file) -> None:
         print("\n4. Saving UVs...")
@@ -300,11 +330,11 @@ with open(mesh.name) as f:
             mesh.add_vert(line[1:])
         elif line[0] == "f":
             mesh.add_face(line[1:])
+        elif line[0] == "vn":
+            mesh.add_normals(line[1:])
 
         if mesh.is_textured():
             if line[0] == "vt":
                 mesh.add_uv(line[1:])
-            elif line[0] == "vn":
-                mesh.add_normals(line[1:])
 
 mesh.save()

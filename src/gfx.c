@@ -138,6 +138,7 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 	mesh->type = *data++;
 
 	mesh->flags.textured = (mesh->type == MT_FT3 || mesh->type == MT_GT3);
+	mesh->flags.gouraud = (mesh->type == MT_G3 || mesh->type == MT_GT3);
 
 	if( mesh->flags.textured ) {
 		imgLoad(TEX, &mesh->tex);
@@ -169,45 +170,92 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 
 	mesh->verts = memAlloc(mesh->vcount * sizeof(*mesh->verts));
 	mesh->faces = memAlloc(mesh->fcount * sizeof(*mesh->faces));
-	mesh->color = memAlloc(mesh->fcount * sizeof(*mesh->color));
+	mesh->ccount = (mesh->flags.gouraud) ? mesh->vcount : mesh->fcount;
+
+	mesh->colors = memAlloc(mesh->ccount * sizeof(*mesh->colors));
 
 	mesh->nidxs = memAlloc(mesh->fcount * sizeof(*mesh->nidxs));
 	mesh->normals = memAlloc(mesh->ncount * sizeof(*mesh->normals));
 
-	for( ; i < mesh->vcount; ++i ) {
-		mesh->verts[i].vx = *data;
-		mesh->verts[i].vy = (*data++) >> 16;
-		mesh->verts[i].vz = *data;
+	if( mesh->flags.gouraud ) {
+		for( ; i < mesh->vcount; ++i ) {
+			mesh->verts[i].vx = *data;
+			mesh->verts[i].vy = (*data++) >> 16;
+			mesh->verts[i].vz = *data;
 
-		++i;
+			mesh->colors[i].r = (*data) >> 16;
+			mesh->colors[i].g = (*data++) >> 24;
+			mesh->colors[i].b = *data;
 
-		mesh->verts[i].vx = (*data++) >> 16;
-		mesh->verts[i].vy = *data;
-		mesh->verts[i].vz = (*data++) >> 16;
+			LOG("v %d %d %d ", mesh->verts[i].vx, mesh->verts[i].vy,
+				mesh->verts[i].vz);
+			LOG("%d %d %d\n", mesh->colors[i].r, mesh->colors[i].g,
+				mesh->colors[i].b);
+			++i;
 
-		size += 3;
-	}
+			mesh->verts[i].vx = (*data++) >> 16;
+			mesh->verts[i].vy = *data;
+			mesh->verts[i].vz = (*data++) >> 16;
 
-	for( i = 0; i < mesh->fcount; ++i ) {
-		mesh->faces[i].vx = *data;
-		mesh->faces[i].vy = (*data++) >> 16;
-		mesh->faces[i].vz = *data;
+			mesh->colors[i].r = *data;
+			mesh->colors[i].g = (*data) >> 8;
+			mesh->colors[i].b = (*data++) >> 16;
 
-		mesh->color[i].r = (*data) >> 16;
-		mesh->color[i].g = (*data++) >> 24;
-		mesh->color[i].b = *data;
+			LOG("v %d %d %d ", mesh->verts[i].vx, mesh->verts[i].vy,
+				mesh->verts[i].vz);
+			LOG("%d %d %d\n", mesh->colors[i].r, mesh->colors[i].g,
+				mesh->colors[i].b);
+			size += 5;
+		}
 
-		++i;
+		for( i = 0; i < mesh->fcount; ++i ) {
+			mesh->faces[i].vx = *data;
+			mesh->faces[i].vy = (*data++) >> 16;
+			mesh->faces[i].vz = *data;
+			++i;
 
-		mesh->faces[i].vx = (*data++) >> 16;
-		mesh->faces[i].vy = *data;
-		mesh->faces[i].vz = (*data++) >> 16;
+			mesh->faces[i].vx = (*data++) >> 16;
+			mesh->faces[i].vy = *data;
+			mesh->faces[i].vz = (*data++) >> 16;
 
-		mesh->color[i].r = *data;
-		mesh->color[i].g = (*data) >> 8;
-		mesh->color[i].b = (*data++) >> 16;
+			size += 3;
+		}
+	} else {
+		for( ; i < mesh->vcount; ++i ) {
+			mesh->verts[i].vx = *data;
+			mesh->verts[i].vy = (*data++) >> 16;
+			mesh->verts[i].vz = *data;
 
-		size += 5;
+			++i;
+
+			mesh->verts[i].vx = (*data++) >> 16;
+			mesh->verts[i].vy = *data;
+			mesh->verts[i].vz = (*data++) >> 16;
+
+			size += 3;
+		}
+
+		for( i = 0; i < mesh->fcount; ++i ) {
+			mesh->faces[i].vx = *data;
+			mesh->faces[i].vy = (*data++) >> 16;
+			mesh->faces[i].vz = *data;
+
+			mesh->colors[i].r = (*data) >> 16;
+			mesh->colors[i].g = (*data++) >> 24;
+			mesh->colors[i].b = *data;
+
+			++i;
+
+			mesh->faces[i].vx = (*data++) >> 16;
+			mesh->faces[i].vy = *data;
+			mesh->faces[i].vz = (*data++) >> 16;
+
+			mesh->colors[i].r = *data;
+			mesh->colors[i].g = (*data) >> 8;
+			mesh->colors[i].b = (*data++) >> 16;
+
+			size += 5;
+		}
 	}
 
 	for( i = 0; i < mesh->ncount; ++i ) {
@@ -373,7 +421,7 @@ static void _drawPolyF3(CP_Mesh *poly, const u_int i) {
 	++polyf3;
 }
 
-static void _drawPolyG3(CP_Mesh *poly, const u_int i) {
+static void _drawPolyG3(CP_Mesh *poly, u_int i) {
 	setPolyG3(polyg3);
 
 	gte_stsxy3(&polyg3->x0, &polyg3->x1, &polyg3->x2);
@@ -382,9 +430,12 @@ static void _drawPolyG3(CP_Mesh *poly, const u_int i) {
 		return;
 	}
 
-	setRGB0(polyg3, 128, 128, 128);
-	setRGB1(polyg3, 128, 128, 128);
-	setRGB2(polyg3, 128, 128, 128);
+	setRGB0(polyg3, poly->colors[poly->faces[i].vx].r,
+		poly->colors[poly->faces[i].vx].g, poly->colors[poly->faces[i].vx].b);
+	setRGB1(polyg3, poly->colors[poly->faces[i].vy].r,
+		poly->colors[poly->faces[i].vy].g, poly->colors[poly->faces[i].vy].b);
+	setRGB2(polyg3, poly->colors[poly->faces[i].vz].r,
+		poly->colors[poly->faces[i].vz].g, poly->colors[poly->faces[i].vz].b);
 
 	/* gte_stdp(&gteResult);
 	gte_stflg(&gteResult); */

@@ -3,8 +3,6 @@
 
 #include <sys/types.h>
 
-#define SPU_MALLOC_MAX 3
-
 /* Note: these values are always BIG endian! */
 typedef struct {
 	char magic[4]; /* 'VAGp' */

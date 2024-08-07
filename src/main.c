@@ -9,7 +9,6 @@
 #include <libpad.h>
 
 #include "anim.h"
-#include "audio.h"
 #include "common.h"
 #include "actor.h"
 #include "gfx.h"
@@ -32,16 +31,17 @@ static void _draw(void) {
 
 int main(void) {
 	CP_Font font;
+	CP_Mesh mesh;
 
 	LOG("=== GAME ENTERED ===\n\n");
 
 	sysInit();
 
 	actorLoad("\\ACT\\CUBOID.ACT;1");
+	gfxLoadMesh("\\MDL\\TGR.M;1", NULL, &mesh);
 	animLoad("\\ANI\\TEST.ANI;1", gActors[0].anim);
 
-	audioLoadAt("\\AUD\\SKR.VAG;1", 1);
-	audioPlay(1);
+	mesh.trans.vy += 20;
 
 	/* Update on VSync, since it's time sensitive */
 	VSyncCallback(_vsyncUpdate);
@@ -50,6 +50,8 @@ int main(void) {
 	while( 1 ) {
 		menuDrawText(FNT_SMALL, 0, 0, "Cool beans\n");
 		menuDrawBox(32, 8, 6, 8);
+
+		gfxDrawMesh(&mesh);
 		_draw();
 	}
 
