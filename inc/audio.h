@@ -16,6 +16,7 @@ typedef struct {
 
 void audioInit(void);
 void audioExit(void);
+void audioUpdate(void);
 
 void audioSetDefaultVoiceAttr(u_int pitch, int channel, u_int addr);
 
@@ -27,5 +28,7 @@ void audioFreeChannel(u_int channel);
 
 void audioPlay(u_int channels);
 void audioStop(u_int channels);
+
+int audioLoadSeq(u_char *vh, u_char *vb, u_long *seq);
 
 #endif // !GUARD_CITYPEEP_AUDIO_H_

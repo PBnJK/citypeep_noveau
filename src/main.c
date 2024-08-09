@@ -8,10 +8,11 @@
 #include <libgpu.h>
 #include <libpad.h>
 
-#include "anim.h"
+#include "audio.h"
 #include "common.h"
 #include "actor.h"
 #include "gfx.h"
+#include "input.h"
 #include "menu.h"
 #include "system.h"
 #include "text.h"
@@ -21,6 +22,7 @@ unsigned long __ramsize = 0x00200000; /* 2MB RAM */
 unsigned long __stacksize = 0x00004000; /* 16Kb Stack */
 
 static void _vsyncUpdate(void) {
+	audioUpdate();
 	actorUpdateAll();
 }
 
@@ -32,16 +34,21 @@ static void _draw(void) {
 int main(void) {
 	CP_Font font;
 	CP_Mesh mesh;
+	MATRIX omtx;
 
 	LOG("=== GAME ENTERED ===\n\n");
 
 	sysInit();
 
-	actorLoad("\\ACT\\CUBOID.ACT;1");
-	gfxLoadMesh("\\MDL\\TGR.M;1", NULL, &mesh);
-	animLoad("\\ANI\\TEST.ANI;1", gActors[0].anim);
+	gfxLoadMesh("\\MDL\\PLAYER.M;1", NULL, &mesh);
+	mesh.trans.vy = 48;
+	mesh.trans.vz = 120;
 
-	mesh.trans.vy += 20;
+	u_long *vh = sysLoadFileFromCD("\\AUD\\TEST.VH;1");
+	u_long *vb = sysLoadFileFromCD("\\AUD\\TEST.VB;1");
+	u_long *sq = sysLoadFileFromCD("\\AUD\\TEST.SEQ;1");
+
+	audioLoadSeq((u_char *)vh, (u_char *)vb, sq);
 
 	/* Update on VSync, since it's time sensitive */
 	VSyncCallback(_vsyncUpdate);
@@ -51,7 +58,23 @@ int main(void) {
 		menuDrawText(FNT_SMALL, 0, 0, "Cool beans\n");
 		menuDrawBox(32, 8, 6, 8);
 
-		gfxDrawMesh(&mesh);
+		if( PAD_P1.up ) {
+			mesh.trans.vy -= 4;
+		}
+
+		if( PAD_P1.down ) {
+			mesh.trans.vy += 4;
+		}
+
+		if( PAD_P1.left ) {
+			mesh.trans.vz += 4;
+		}
+
+		if( PAD_P1.right ) {
+			mesh.trans.vz -= 4;
+		}
+
+		gfxDrawMeshNoMatrix(&mesh);
 		_draw();
 	}
 

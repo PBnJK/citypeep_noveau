@@ -1,5 +1,8 @@
 /* Citypeep: audio handler */
 
+#include <stdio.h>
+#include <sys/types.h>
+
 #include <libsnd.h>
 #include <libspu.h>
 
@@ -7,7 +10,12 @@
 #include "audio.h"
 #include "system.h"
 
+#define S_MAX 2
+#define T_MAX 3
+
 static SpuCommonAttr cattr = { 0 };
+
+char seqTable[SS_SEQ_TABSIZ * S_MAX * T_MAX];
 
 void audioInit(void) {
 	SsInit();
@@ -17,8 +25,9 @@ void audioInit(void) {
 	SsUtReverbOff();
 	SpuClearReverbWorkArea(SPU_REV_MODE_OFF);
 
-	SsSetTickMode(SS_TICK60);
-	SsStart2();
+	SsSetTableSize(seqTable, S_MAX, T_MAX);
+
+	SsSetTickMode(SS_NOTICK);
 
 	cattr.mask = SPU_COMMON_MVOLL | SPU_COMMON_MVOLR;
 	cattr.mvol.left = 0x3FFF;
@@ -27,11 +36,16 @@ void audioInit(void) {
 }
 
 void audioExit(void) {
-	SsEnd();
-
 	for( u_int i = 0; i < 24; ++i ) {
 		audioFreeChannel(0x1L << i);
 	}
+
+	SsEnd();
+	SsQuit();
+}
+
+void audioUpdate(void) {
+	SsSeqCalledTbyT();
 }
 
 void audioSetDefaultVoiceAttr(u_int pitch, int channel, u_int addr) {
@@ -105,4 +119,30 @@ void audioPlay(u_int channels) {
 
 void audioStop(u_int channels) {
 	SpuSetKey(SpuOff, channels);
+}
+
+int audioLoadSeq(u_char *vh, u_char *vb, u_long *seq) {
+	short vab = SsVabOpenHead(vh, -1);
+	if( vab == -1 ) {
+		LOG("=== FATAL ERROR: BAD_VH ===\n");
+		LOG("Couldn't open provided VAB header");
+		return -1;
+	}
+
+	vab = SsVabTransBody(vb, vab);
+	if( vab == -1 ) {
+		LOG("=== FATAL ERROR: BAD_VB ===\n");
+		LOG("Couldn't open provided VAB body");
+		return -1;
+	}
+	SsVabTransCompleted(SS_WAIT_COMPLETED);
+
+	short loadedSeq = SsSeqOpen(seq, vab);
+
+	SsSetMVol(127, 127);
+	SsSeqSetVol(loadedSeq, 127, 127);
+
+	SsSeqPlay(loadedSeq, SSPLAY_PLAY, SSPLAY_INFINITY);
+
+	return 0;
 }
