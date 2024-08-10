@@ -9,31 +9,21 @@
 #include "common.h"
 #include "cp_memory.h"
 
+#define STACK_SIZE 0x10000
+
 #define B2KB(X) ((X) >> 10)
 
-#define HEAP_START_ADDR (void *)0x800F8000
-#define HEAP_SIZE 0x00100000
-
-static int _remainingBytes = HEAP_SIZE;
+extern char __heap_start, __sp;
 
 void memInit(void) {
+	const u_long HEAP_SIZE = (&__sp - STACK_SIZE) - &__heap_start;
+
 	EnterCriticalSection();
-	InitHeap3(HEAP_START_ADDR, HEAP_SIZE);
+	InitHeap3((u_long *)&__heap_start, HEAP_SIZE);
 	ExitCriticalSection();
 }
 
 void *memAlloc(const size_t BYTES) {
-	_remainingBytes -= BYTES;
-
-	/*
-	if( _remainingBytes <= 0 ) {
-		LOG("=== FATAL ERROR: NO_MEMORY ===\n");
-		LOG("Tried to allocate %d bytes, but only had %d remaining!", BYTES,
-			_remainingBytes + BYTES);
-		exit();
-	}
-	*/
-
 	void *block = malloc3(BYTES);
 	if( !block ) {
 		LOG("=== FATAL ERROR: NULL_MALLOC ===\n");
@@ -41,8 +31,6 @@ void *memAlloc(const size_t BYTES) {
 		exit();
 	}
 
-	LOG("ALLOC %d (%d/%d, %d/%dKB)\n", BYTES, _remainingBytes, HEAP_SIZE,
-		B2KB(_remainingBytes), B2KB(HEAP_SIZE));
 	return block;
 }
 
