@@ -38,6 +38,12 @@ void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->anim = memAlloc(sizeof(CP_Anim));
 }
 
+void actorExit(void) {
+	for( u_int i = 0; i < ACTOR_LIST_SIZE; ++i ) {
+		actorFreeAt(i);
+	}
+}
+
 u_int actorLoad(const char *PATH) {
 	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
 		return 1;
@@ -88,8 +94,11 @@ void actorLoadInto(const char *PATH, CP_Actor *actor) {
 }
 
 void actorFreePointer(CP_Actor *actor) {
+	for( u_int i = 0; i < actor->meshCount; ++i ) {
+		gfxFreeMesh(&actor->mesh[i]);
+	}
+
 	actor->meshCount = 0;
-	memFree(actor->mesh);
 
 	actor->flags.active = 0;
 	actor->flags.visible = 0;
@@ -102,10 +111,12 @@ void actorFreePointer(CP_Actor *actor) {
 	actor->animCounter = 0;
 
 	memFree(actor->anim);
+
+	actor = NULL;
 }
 
 u_int actorFreeLast(void) {
-	if( gLoadedActors == 0 ) {
+	if( gLoadedActors == NULL ) {
 		return 1;
 	}
 

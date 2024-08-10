@@ -17,10 +17,6 @@
 #include "system.h"
 #include "text.h"
 
-/* For dev units with more RAM */
-unsigned long __ramsize = 0x00200000; /* 2MB RAM */
-unsigned long __stacksize = 0x00004000; /* 16Kb Stack */
-
 static void _vsyncUpdate(void) {
 	audioUpdate();
 	actorUpdateAll();

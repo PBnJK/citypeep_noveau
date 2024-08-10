@@ -1,6 +1,8 @@
+/* Citypeep: Image loading */
+
 #include "image.h"
+#include "cp_memory.h"
 #include "system.h"
-#include "common.h"
 
 void imgLoad(const char *FILENAME, TIM_IMAGE *tim) {
 	u_long *data = sysLoadFileFromCD(FILENAME);
@@ -19,4 +21,6 @@ void imgLoad(const char *FILENAME, TIM_IMAGE *tim) {
 		LoadImage(tim->crect, tim->caddr);
 		DrawSync(0);
 	}
+
+	memFree(data);
 }

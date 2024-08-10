@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "audio.h"
+#include "cp_memory.h"
 #include "system.h"
 
 #define S_MAX 2
@@ -143,6 +144,10 @@ int audioLoadSeq(u_char *vh, u_char *vb, u_long *seq) {
 	SsSeqSetVol(loadedSeq, 127, 127);
 
 	SsSeqPlay(loadedSeq, SSPLAY_PLAY, SSPLAY_INFINITY);
+
+	memFree(vh);
+	memFree(vb);
+	memFree(seq);
 
 	return 0;
 }

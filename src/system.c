@@ -11,8 +11,9 @@
 #include <libpad.h>
 #include <malloc.h>
 
-#include "common.h"
+#include "actor.h"
 #include "audio.h"
+#include "common.h"
 #include "gfx.h"
 #include "input.h"
 #include "menu.h"
@@ -57,6 +58,7 @@ void sysExit(void) {
 
 	saveExit();
 	audioExit();
+	actorExit();
 
 	ResetGraph(3);
 	StopCallback();

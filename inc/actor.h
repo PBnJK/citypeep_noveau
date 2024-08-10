@@ -34,6 +34,7 @@ extern u_int gLoadedActors;
 extern CP_Actor gActors[8];
 
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
+void actorExit(void);
 
 u_int actorLoad(const char *PATH);
 void actorLoadInto(const char *PATH, CP_Actor *actor);
