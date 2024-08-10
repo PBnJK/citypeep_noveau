@@ -11,6 +11,7 @@
 #include <inline_n.h>
 
 #include "anim.h"
+#include "camera.h"
 #include "gfx.h"
 #include "cp_memory.h"
 #include "system.h"
@@ -184,12 +185,17 @@ void actorUpdateAll(void) {
 	}
 }
 
-void actorDraw(CP_Actor *actor) {
+void actorDraw(CP_Actor *actor, CP_Camera *cam) {
 	if( !actor->flags.visible ) {
 		return;
 	}
 
 	MATRIX omtx;
+
+	RotMatrix_gte(&cam->rot, &cam->mat);
+	TransMatrix(&cam->mat, &cam->trans);
+
+	CompMatrixLV(&omtx, &cam->mat, &omtx);
 
 	RotMatrix_gte(&actor->rot, &omtx);
 	TransMatrix(&omtx, &actor->trans);
@@ -200,8 +206,8 @@ void actorDraw(CP_Actor *actor) {
 	}
 }
 
-void actorDrawAll(void) {
+void actorDrawAll(CP_Camera *cam) {
 	for( u_int i = 0; i < gLoadedActors; ++i ) {
-		actorDraw(&gActors[i]);
+		actorDraw(&gActors[i], cam);
 	}
 }

@@ -9,6 +9,7 @@
 #include <libpad.h>
 
 #include "audio.h"
+#include "camera.h"
 #include "common.h"
 #include "actor.h"
 #include "dialogue.h"
@@ -18,6 +19,7 @@
 #include "text.h"
 
 static const char *lines[] = { "Thanks everyone!", NULL };
+static CP_Camera cam;
 
 static void _vsyncUpdate(void) {
 	audioUpdate();
@@ -26,7 +28,7 @@ static void _vsyncUpdate(void) {
 }
 
 static void _draw(void) {
-	actorDrawAll();
+	actorDrawAll(&cam);
 	dialogueDraw();
 	gfxDisplay();
 }
@@ -48,26 +50,29 @@ int main(void) {
 	VSyncCallback(_vsyncUpdate);
 
 	dialogueStart(lines);
+	camInit(&cam);
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
 		if( PAD_P1.up ) {
-			mesh.trans.vy -= 4;
+			cam.trans.vy -= 4;
 		}
 
 		if( PAD_P1.down ) {
-			mesh.trans.vy += 4;
+			cam.trans.vy += 4;
 		}
 
 		if( PAD_P1.left ) {
-			mesh.trans.vz += 4;
+			cam.trans.vz += 4;
 		}
 
 		if( PAD_P1.right ) {
-			mesh.trans.vz -= 4;
+			cam.trans.vz -= 4;
 		}
 
-		gfxDrawMeshNoMatrix(&mesh);
+		RotMatrix_gte(&cam.rot, &cam.mat);
+		TransMatrix(&cam.mat, &cam.trans);
+		gfxDrawMeshWithMatrix(&mesh, &cam.mat);
 		_draw();
 	}
 

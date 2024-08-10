@@ -6,6 +6,7 @@
 #include <libgte.h>
 #include <libgpu.h>
 
+#include "camera.h"
 #include "gfx.h"
 #include "anim.h"
 
@@ -48,7 +49,7 @@ void actorNextFrame(CP_Actor *actor);
 void actorUpdate(CP_Actor *actor);
 void actorUpdateAll(void);
 
-void actorDraw(CP_Actor *actor);
-void actorDrawAll(void);
+void actorDraw(CP_Actor *actor, CP_Camera *cam);
+void actorDrawAll(CP_Camera *cam);
 
 #endif // !GUARD_CITYPEEP_ACTOR_H_
