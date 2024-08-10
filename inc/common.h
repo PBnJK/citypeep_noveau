@@ -1,6 +1,7 @@
 #ifndef GUARD_CITYPEEP_COMMON_H_
 #define GUARD_CITYPEEP_COMMON_H_
 
+#include <stdio.h>
 #include <sys/types.h>
 
 #ifdef DEBUG
@@ -23,5 +24,8 @@ typedef int bool;
 #define LTOB32(x)                                                              \
 	(((x) >> 24) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0x00FF0000)           \
 		| ((x) << 24))
+
+void *cp_memcpy(void *restrict dst, const void *restrict src, size_t cnt);
+size_t cp_strlen(const char *STR);
 
 #endif // !GUARD_CITYPEEP_COMMON_H_

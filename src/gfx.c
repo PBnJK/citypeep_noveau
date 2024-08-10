@@ -47,6 +47,7 @@ static POLY_GT3 *polygt3;
 static SPRT *sprt;
 
 static DR_TPAGE *dr_tpage;
+static DR_STP *dr_stp;
 
 static MATRIX colorMatrix = {
 	ONE * 3 / 4, 0, 0, /* Red   */
@@ -340,27 +341,55 @@ void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to) {
 	to->tcount = from->tcount;
 	to->ncount = from->ncount;
 
-	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
 	to->verts = from->verts;
-
-	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
 	to->faces = from->faces;
-
-	to->colors = memAlloc(from->ccount * sizeof(*from->colors));
 	to->colors = from->colors;
-
-	to->nidxs = memAlloc(from->fcount * sizeof(*from->nidxs));
 	to->nidxs = from->nidxs;
-
-	to->normals = memAlloc(from->ncount * sizeof(*from->normals));
 	to->normals = from->normals;
 
 	if( from->flags.textured ) {
-		to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
 		to->uvidxs = from->uvidxs;
-
-		to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
 		to->uvs = from->uvs;
+	}
+}
+
+void gfxDeepCopyMesh(CP_Mesh *from, CP_Mesh *to) {
+	copyVector(&to->rot, &from->rot);
+	copyVector(&to->trans, &from->trans);
+	copyVector(&to->scale, &from->scale);
+
+	to->flags = from->flags;
+	to->type = from->type;
+
+	to->tpage = from->tpage;
+	to->clut = from->clut;
+
+	to->vcount = from->vcount;
+	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
+	cp_memcpy(to->verts, from->verts, from->vcount);
+
+	to->fcount = from->fcount;
+	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
+	cp_memcpy(to->faces, from->faces, from->fcount);
+
+	to->nidxs = memAlloc(from->fcount * sizeof(*from->nidxs));
+	cp_memcpy(to->nidxs, from->nidxs, from->fcount);
+
+	to->ccount = from->ccount;
+	to->colors = memAlloc(from->ccount * sizeof(*from->colors));
+	cp_memcpy(to->colors, from->colors, from->ccount);
+
+	to->ncount = from->ncount;
+	to->normals = memAlloc(from->ncount * sizeof(*from->normals));
+	cp_memcpy(to->normals, from->normals, from->ncount);
+
+	if( from->flags.textured ) {
+		to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
+		cp_memcpy(to->uvidxs, from->uvidxs, from->fcount);
+
+		to->tcount = from->tcount;
+		to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
+		cp_memcpy(to->uvs, from->uvs, from->tcount);
 	}
 }
 
@@ -673,6 +702,21 @@ void gfxDrawSprite(CP_Sprite *spr) {
 	nextPrimitive = (char *)sprt;
 }
 
+void gfxDrawTile(TILE *tile) {
+	setTile(tile);
+	addPrim(&ot[activeBuffer], tile);
+
+	nextPrimitive += sizeof(TILE);
+}
+
+void gfxDrawTranspTile(TILE *tile) {
+	setTile(tile);
+	setSemiTrans(tile, 1);
+	addPrim(&ot[activeBuffer], tile);
+
+	nextPrimitive += sizeof(TILE);
+}
+
 void gfxDrawFont(CP_Font *font, u_short x, u_short y) {
 	sprt = (SPRT *)nextPrimitive;
 	setSprt(sprt);
@@ -697,4 +741,14 @@ void gfxSetTPage(u_short tpage) {
 	++dr_tpage;
 
 	nextPrimitive = (char *)dr_tpage;
+}
+
+void gfxSetSTP(int stp) {
+	dr_stp = (DR_STP *)nextPrimitive;
+	setDrawStp(dr_stp, stp);
+
+	addPrim(ot[activeBuffer], dr_stp);
+	++dr_stp;
+
+	nextPrimitive = (char *)dr_stp;
 }

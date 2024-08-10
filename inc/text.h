@@ -20,5 +20,6 @@ typedef struct {
 void textInitFont(CP_Font *font, const char *PATH, u_char cw, u_char ch);
 
 void textDraw(CP_Font *font, u_char x, u_char y, const char *TEXT);
+void textDrawN(CP_Font *font, u_char x, u_char y, const char *TEXT, u_short n);
 
 #endif // !GUARD_CITYPEEP_TEXT_H_

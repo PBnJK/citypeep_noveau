@@ -11,19 +11,23 @@
 #include "audio.h"
 #include "common.h"
 #include "actor.h"
+#include "dialogue.h"
 #include "gfx.h"
 #include "input.h"
-#include "menu.h"
 #include "system.h"
 #include "text.h"
 
+static const char *lines[] = { "Thanks everyone!", NULL };
+
 static void _vsyncUpdate(void) {
 	audioUpdate();
+	dialogueUpdate();
 	actorUpdateAll();
 }
 
 static void _draw(void) {
 	actorDrawAll();
+	dialogueDraw();
 	gfxDisplay();
 }
 
@@ -40,20 +44,13 @@ int main(void) {
 	mesh.trans.vy = 48;
 	mesh.trans.vz = 120;
 
-	u_long *vh = sysLoadFileFromCD("\\AUD\\TEST.VH;1");
-	u_long *vb = sysLoadFileFromCD("\\AUD\\TEST.VB;1");
-	u_long *sq = sysLoadFileFromCD("\\AUD\\TEST.SEQ;1");
-
-	audioLoadSeq((u_char *)vh, (u_char *)vb, sq);
-
 	/* Update on VSync, since it's time sensitive */
 	VSyncCallback(_vsyncUpdate);
 
+	dialogueStart(lines);
+
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
-		menuDrawText(FNT_SMALL, 0, 0, "Cool beans\n");
-		menuDrawBox(32, 8, 6, 8);
-
 		if( PAD_P1.up ) {
 			mesh.trans.vy -= 4;
 		}

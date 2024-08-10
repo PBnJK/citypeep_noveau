@@ -26,6 +26,7 @@ typedef struct {
 	u_int visible : 1;
 	u_int textured : 1;
 	u_int gouraud : 1;
+	u_int copy : 2; /* Copy type (0 = not a copy, 1 = shallow copy, 2 = deep) */
 } CP_MeshFlags;
 
 typedef struct CP_Mesh {
@@ -73,16 +74,21 @@ void gfxFreeMesh(CP_Mesh *mesh);
 
 u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh);
 u_int gfxLoadMesh(const char *PATH, const char *TEX, CP_Mesh *mesh);
+
 void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to);
+void gfxDeepCopyMesh(CP_Mesh *from, CP_Mesh *to);
 
 void gfxDrawMesh(CP_Mesh *mesh);
 void gfxDrawMeshNoMatrix(CP_Mesh *poly);
 void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix);
 
 void gfxDrawSprite(CP_Sprite *spr);
+void gfxDrawTile(TILE *tile);
+void gfxDrawTranspTile(TILE *tile);
 
 void gfxDrawFont(CP_Font *font, u_short x, u_short y);
 
 void gfxSetTPage(u_short tpage);
+void gfxSetSTP(int stp);
 
 #endif // !GUARD_CITYPEEP_GFX_H_

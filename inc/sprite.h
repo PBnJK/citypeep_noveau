@@ -13,8 +13,8 @@ typedef struct {
 	u_short clut;
 	CP_UV baseuv;
 	CP_UV uv;
-	u_char x, y;
-	u_char w, h;
+	u_short x, y;
+	u_short w, h;
 	CVECTOR col;
 } CP_Sprite;
 

@@ -6,21 +6,17 @@
 #include "gfx.h"
 #include "sprite.h"
 
-void ninePatchDraw(CP_Sprite *np, u_char x, u_char y, u_char w, u_char h) {
-	u_char px = 0;
-	u_char py = 0;
+#include "common.h"
 
-	const u_char LAST_X = (x + (w * np->w)) - (np->w * 2);
-	const u_char LAST_Y = (y + (h * np->h)) - (np->h * 2);
+void ninePatchDraw(CP_Sprite *np, u_short x, u_short y, u_short w, u_short h) {
+	const u_short LAST_X = (x + ((w - 2) * np->w));
+	const u_short LAST_Y = (y + ((h - 2) * np->h));
 
-	for( u_char cy = y; cy < y + (h * np->h); cy += np->w ) {
-		for( u_char cx = x; cx < x + (w * np->w); cx += np->h ) {
-			np->x = cx;
-			np->y = cy;
-
+	for( np->y = y; np->y < y + (h * np->h); np->y += np->h ) {
+		for( np->x = x; np->x < x + (w * np->w); np->x += np->w ) {
 			gfxDrawSprite(np);
 
-			if( cx == LAST_X ) {
+			if( np->x == LAST_X ) {
 				np->uv.u = np->baseuv.u + (np->w * 2);
 			} else {
 				np->uv.u = np->baseuv.u + np->w;
@@ -29,7 +25,7 @@ void ninePatchDraw(CP_Sprite *np, u_char x, u_char y, u_char w, u_char h) {
 
 		np->uv.u = np->baseuv.u;
 
-		if( cy == LAST_Y ) {
+		if( np->y == LAST_Y ) {
 			np->uv.v = np->baseuv.v + (np->h * 2);
 		} else {
 			np->uv.v = np->baseuv.v + np->h;

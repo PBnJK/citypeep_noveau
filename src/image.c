@@ -21,6 +21,4 @@ void imgLoad(const char *FILENAME, TIM_IMAGE *tim) {
 		LoadImage(tim->crect, tim->caddr);
 		DrawSync(0);
 	}
-
-	memFree(data);
 }

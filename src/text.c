@@ -1,12 +1,9 @@
 /* Citypeep: Text-drawing utility */
 
-#include <stdio.h>
 #include <sys/types.h>
 
 #include <libgte.h>
 #include <libgpu.h>
-
-#include "common.h"
 
 #include "text.h"
 #include "image.h"
@@ -43,6 +40,44 @@ void textDraw(CP_Font *font, u_char x, u_char y, const char *TEXT) {
 	char c = 0;
 
 	for( ; i < MAX_TEXT_SIZE; ++i ) {
+		if( TEXT[i] == '\0' ) {
+			break;
+		}
+
+		c = TEXT[i];
+
+		switch( c ) {
+		case '\n': /* Newline */
+			x = init_pos;
+			y += font->ch;
+			break;
+		case ' ': /* Skip whitespace */
+			x += font->cw;
+			break;
+		default:
+			c -= 33;
+
+			font->uv.u = font->cw * (c % font->cr);
+			font->uv.u += font->baseUV.u;
+
+			font->uv.v = font->ch * (c / font->cr);
+			font->uv.v += font->baseUV.v;
+
+			gfxDrawFont(font, x, y + 8);
+
+			x += font->cw;
+			break;
+		}
+	}
+
+	gfxSetTPage(font->tPage);
+}
+
+void textDrawN(CP_Font *font, u_char x, u_char y, const char *TEXT, u_short n) {
+	u_short i = 0, init_pos = x;
+	char c = 0;
+
+	for( ; i < n; ++i ) {
 		if( TEXT[i] == '\0' ) {
 			break;
 		}

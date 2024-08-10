@@ -5,6 +5,6 @@
 
 #include "sprite.h"
 
-void ninePatchDraw(CP_Sprite *np, u_char x, u_char y, u_char w, u_char h);
+void ninePatchDraw(CP_Sprite *np, u_short x, u_short y, u_short w, u_short h);
 
 #endif // !GUARD_CITYPEEP_NINEPATCH_H_
