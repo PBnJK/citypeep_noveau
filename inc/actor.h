@@ -6,7 +6,6 @@
 #include <libgte.h>
 #include <libgpu.h>
 
-#include "camera.h"
 #include "gfx.h"
 #include "anim.h"
 
@@ -19,11 +18,15 @@ typedef struct {
 	SVECTOR rot;
 	VECTOR trans;
 	VECTOR scale;
+	MATRIX mat;
 
 	CP_ActorFlags flags;
 
 	u_int meshCount;
 	CP_Mesh *mesh;
+
+	u_short lcount;
+	u_short **links;
 
 	u_short animCounter;
 	u_short currFrame;
@@ -37,7 +40,7 @@ extern CP_Actor gActors[8];
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
 void actorExit(void);
 
-u_int actorLoad(const char *PATH);
+int actorLoad(const char *PATH);
 void actorLoadInto(const char *PATH, CP_Actor *actor);
 
 void actorFreePointer(CP_Actor *actor);
@@ -49,7 +52,7 @@ void actorNextFrame(CP_Actor *actor);
 void actorUpdate(CP_Actor *actor);
 void actorUpdateAll(void);
 
-void actorDraw(CP_Actor *actor, CP_Camera *cam);
-void actorDrawAll(CP_Camera *cam);
+void actorDraw(CP_Actor *actor);
+void actorDrawAll(void);
 
 #endif // !GUARD_CITYPEEP_ACTOR_H_

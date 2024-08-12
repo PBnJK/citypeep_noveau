@@ -1,6 +1,5 @@
 /* Citypeep: audio handler */
 
-#include <stdio.h>
 #include <sys/types.h>
 
 #include <libsnd.h>

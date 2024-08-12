@@ -8,11 +8,17 @@
 
 typedef struct {
 	SVECTOR rot;
+	SVECTOR trot;
+
 	VECTOR trans;
+	VECTOR ttrans;
+
 	MATRIX mat;
 } CP_Camera;
 
-void camInit(CP_Camera *cam);
+extern CP_Camera camera;
+
+void camInit(void);
 
 void camUpdate(void);
 

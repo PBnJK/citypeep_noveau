@@ -10,6 +10,8 @@
 #define LOG(...)
 #endif // DEBUG
 
+#define V_ITEMS(V) (V)->vx, (V)->vy, (V)->vz
+
 typedef int bool;
 #define false 0
 #define true 1

@@ -10,12 +10,13 @@
 
 #include <inline_n.h>
 
+#include "actor.h"
 #include "anim.h"
 #include "camera.h"
-#include "gfx.h"
 #include "cp_memory.h"
+#include "gfx.h"
+#include "stddef.h"
 #include "system.h"
-#include "actor.h"
 
 #define ACTOR_LIST_SIZE 8
 
@@ -45,13 +46,13 @@ void actorExit(void) {
 	}
 }
 
-u_int actorLoad(const char *PATH) {
+int actorLoad(const char *PATH) {
 	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
-		return 1;
+		return -1;
 	}
 
 	actorLoadInto(PATH, &gActors[gLoadedActors++]);
-	return 0;
+	return gLoadedActors - 1;
 }
 
 void actorLoadInto(const char *PATH, CP_Actor *actor) {
@@ -185,29 +186,32 @@ void actorUpdateAll(void) {
 	}
 }
 
-void actorDraw(CP_Actor *actor, CP_Camera *cam) {
+void actorDraw(CP_Actor *actor) {
 	if( !actor->flags.visible ) {
 		return;
 	}
 
-	MATRIX omtx;
+	MATRIX origin;
 
-	RotMatrix_gte(&cam->rot, &cam->mat);
-	TransMatrix(&cam->mat, &cam->trans);
+	CP_Mesh *base = &actor->mesh[1];
 
-	CompMatrixLV(&omtx, &cam->mat, &omtx);
+	RotMatrix_gte(&actor->rot, &actor->mat);
+	TransMatrix(&actor->mat, &actor->trans);
+	ScaleMatrix(&actor->mat, &actor->scale);
 
-	RotMatrix_gte(&actor->rot, &omtx);
-	TransMatrix(&omtx, &actor->trans);
-	ScaleMatrix(&omtx, &actor->scale);
+	RotMatrix_gte(&base->rot, &origin);
+	TransMatrix(&origin, &base->trans);
+	ScaleMatrix(&origin, &base->scale);
+
+	CompMatrixLV(&actor->mat, &origin, &actor->mat);
 
 	for( int i = 0; i < actor->meshCount; ++i ) {
-		gfxDrawMeshWithMatrix(&actor->mesh[i], &omtx);
+		gfxDrawMeshWithMatrix(&actor->mesh[i], &actor->mat);
 	}
 }
 
-void actorDrawAll(CP_Camera *cam) {
+void actorDrawAll(void) {
 	for( u_int i = 0; i < gLoadedActors; ++i ) {
-		actorDraw(&gActors[i], cam);
+		actorDraw(&gActors[i]);
 	}
 }

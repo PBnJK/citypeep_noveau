@@ -1,6 +1,5 @@
 /* Citypeep: Graphics handling */
 
-#include <stdio.h>
 #include <stddef.h>
 #include <sys/types.h>
 
@@ -9,6 +8,7 @@
 #include <libgpu.h>
 
 #include <inline_n.h>
+#include "camera.h"
 #include "cpu_macros.h"
 
 #include "common.h"
@@ -610,6 +610,10 @@ void gfxDrawMesh(CP_Mesh *poly) {
 			continue;
 		}
 
+		/* FIXME:
+		 * This is probably so slow
+		 * Put it in a jump table or put the whole for loop in a function
+		 */
 		switch( poly->type ) {
 		case MT_F3:
 			_drawPolyF3(poly, i);
@@ -646,7 +650,6 @@ void gfxDrawMeshNoMatrix(CP_Mesh *poly) {
 	}
 
 	MATRIX omtx, lmtx;
-	int otz;
 
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);
@@ -656,7 +659,6 @@ void gfxDrawMeshNoMatrix(CP_Mesh *poly) {
 
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
-
 	gte_SetLightMatrix(&lmtx);
 
 	gfxDrawMesh(poly);
@@ -668,7 +670,6 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	}
 
 	MATRIX omtx, lmtx;
-	int otz;
 
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);
@@ -677,11 +678,12 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	CompMatrixLV(&omtx, matrix, &omtx);
 
 	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+	gte_SetLightMatrix(&lmtx);
+
+	CompMatrixLV(&omtx, &camera.mat, &omtx);
 
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
-
-	gte_SetLightMatrix(&lmtx);
 
 	gfxDrawMesh(poly);
 }

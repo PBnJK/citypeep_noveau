@@ -1,6 +1,5 @@
 /* Citypeep -- System functions */
 
-#include <stdio.h>
 #include <sys/types.h>
 
 #include <libds.h>
@@ -13,13 +12,23 @@
 
 #include "actor.h"
 #include "audio.h"
+#include "camera.h"
 #include "common.h"
+#include "dialogue.h"
 #include "gfx.h"
 #include "input.h"
 #include "menu.h"
+#include "player.h"
 #include "save.h"
 #include "system.h"
 #include "cp_memory.h"
+
+static void _vsyncUpdate(void) {
+	audioUpdate();
+	camUpdate();
+	dialogueUpdate();
+	actorUpdateAll();
+}
 
 static void cdInit(void) {
 	if( !DsInit() ) {
@@ -49,6 +58,10 @@ void sysInit(void) {
 	cdInit();
 	audioInit();
 	menuInit();
+	camInit();
+	playerInit();
+
+	VSyncCallback(_vsyncUpdate);
 
 	LOG("Everything was initialized succesfully!\n\n");
 }

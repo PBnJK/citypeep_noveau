@@ -30,6 +30,14 @@ class Actor:
         # ]
         self.models = []
 
+        # Hierarchy
+        # [
+        #  [1, 2],
+        #  [5],
+        #  ...
+        # ]
+        self.links = []
+
         root = et.parse(self.name).getroot()
         for child in root:
             if child.tag == "model":
@@ -39,7 +47,7 @@ class Actor:
     def __parse_vec(vec: str) -> int:
         return [int(i) for i in vec.split(" ")]
 
-    def __parse_model(self, model) -> None:
+    def __parse_model(self, model) -> list[int]:
         data = [
             "../model/" + model.attrib["path"],
             [0, 0, 0],
@@ -54,6 +62,8 @@ class Actor:
                 data[TRANS_IDX] = self.__parse_vec(child.text)
             elif child.tag == "scale":
                 data[SCALE_IDX] = self.__parse_vec(child.text)
+            elif child.tag == "model":
+                self.__parse_model(child)
 
         self.models.append(data)
 
@@ -74,7 +84,7 @@ class Actor:
             file.write(item.to_bytes(size, byteorder="little", signed=True))
 
     def __save_models(self, file) -> None:
-        print("2. Writing models:")
+        print("3. Writing models:")
 
         for model in self.models:
             if model[PATH_IDX] == self.old_path:
