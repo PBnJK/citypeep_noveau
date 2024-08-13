@@ -24,19 +24,19 @@ void camUpdate() {
 		camera.rot.vz >> 12);
 
 	if( !PAD_P1.up ) {
-		camera.rot.vy += 4;
+		camera.rot.vx += 8;
 	}
 
 	if( !PAD_P1.down ) {
-		camera.rot.vy -= 4;
+		camera.rot.vx -= 8;
 	}
 
 	if( !PAD_P1.left ) {
-		camera.rot.vx += 4;
+		camera.rot.vy += 8;
 	}
 
 	if( !PAD_P1.right ) {
-		camera.rot.vx -= 4;
+		camera.rot.vy -= 8;
 	}
 
 	if( !PAD_P1.l1 ) {
@@ -57,26 +57,23 @@ void camUpdate() {
 
 	/*
 	if( !PAD_P1.triangle ) {
-		camera.rot.vx -= 4;
 	}
 
 	if( !PAD_P1.cross ) {
-		camera.rot.vx += 4;
 	}
 
 	if( !PAD_P1.square ) {
-		camera.rot.vy -= 4;
 	}
 
 	if( !PAD_P1.circle ) {
-		camera.rot.vy += 4;
 	}
-
 	*/
 
-	VECTOR vec;
-
 	RotMatrix(&camera.rot, &camera.mat);
-	ApplyMatrixLV(&camera.mat, &camera.trans, &vec);
-	TransMatrix(&camera.mat, &vec);
+
+	camera.ttrans.vx = -camera.trans.vx >> 12;
+	camera.ttrans.vy = -camera.trans.vy >> 12;
+	camera.ttrans.vz = -camera.trans.vz >> 12;
+	ApplyMatrixLV(&camera.mat, &camera.ttrans, &camera.ttrans);
+	TransMatrix(&camera.mat, &camera.ttrans);
 }

@@ -191,19 +191,11 @@ void actorDraw(CP_Actor *actor) {
 		return;
 	}
 
-	MATRIX origin;
+	actor->rot.vx += 8;
 
-	CP_Mesh *base = &actor->mesh[1];
-
-	RotMatrix_gte(&actor->rot, &actor->mat);
 	TransMatrix(&actor->mat, &actor->trans);
 	ScaleMatrix(&actor->mat, &actor->scale);
-
-	RotMatrix_gte(&base->rot, &origin);
-	TransMatrix(&origin, &base->trans);
-	ScaleMatrix(&origin, &base->scale);
-
-	CompMatrixLV(&actor->mat, &origin, &actor->mat);
+	RotMatrix_gte(&actor->rot, &actor->mat);
 
 	for( int i = 0; i < actor->meshCount; ++i ) {
 		gfxDrawMeshWithMatrix(&actor->mesh[i], &actor->mat);

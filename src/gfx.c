@@ -606,13 +606,14 @@ void gfxDrawMesh(CP_Mesh *poly) {
 		gte_stotz(&otz);
 
 		otz >>= 2;
-		if( otz <= 3 || otz >= OT_LENGTH ) {
+		if( otz <= 5 || otz >= OT_LENGTH ) {
 			continue;
 		}
 
 		/* FIXME:
 		 * This is probably so slow
 		 * Put it in a jump table or put the whole for loop in a function
+		 * wait this is literally a jump table stupid just put in a big function
 		 */
 		switch( poly->type ) {
 		case MT_F3:
@@ -651,6 +652,8 @@ void gfxDrawMeshNoMatrix(CP_Mesh *poly) {
 
 	MATRIX omtx, lmtx;
 
+	PushMatrix(); /* Preserve camera matrix */
+
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);
 	ScaleMatrix(&omtx, &poly->scale);
@@ -662,6 +665,8 @@ void gfxDrawMeshNoMatrix(CP_Mesh *poly) {
 	gte_SetLightMatrix(&lmtx);
 
 	gfxDrawMesh(poly);
+
+	PopMatrix(); /* Restore camera matrix */
 }
 
 void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
@@ -670,6 +675,8 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	}
 
 	MATRIX omtx, lmtx;
+
+	PushMatrix(); /* Preserve camera matrix */
 
 	RotMatrix_gte(&poly->rot, &omtx);
 	TransMatrix(&omtx, &poly->trans);
@@ -680,12 +687,14 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	MulMatrix0(&lightMatrix, &omtx, &lmtx);
 	gte_SetLightMatrix(&lmtx);
 
-	CompMatrixLV(&omtx, &camera.mat, &omtx);
+	CompMatrixLV(&camera.mat, &omtx, &omtx);
 
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
 
 	gfxDrawMesh(poly);
+
+	PopMatrix(); /* Restore camera matrix */
 }
 
 void gfxDrawSprite(CP_Sprite *spr) {
