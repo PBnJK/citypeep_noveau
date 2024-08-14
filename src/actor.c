@@ -12,7 +12,6 @@
 
 #include "actor.h"
 #include "anim.h"
-#include "camera.h"
 #include "cp_memory.h"
 #include "gfx.h"
 #include "stddef.h"
@@ -190,8 +189,6 @@ void actorDraw(CP_Actor *actor) {
 	if( !actor->flags.visible ) {
 		return;
 	}
-
-	actor->rot.vx += 8;
 
 	TransMatrix(&actor->mat, &actor->trans);
 	ScaleMatrix(&actor->mat, &actor->scale);

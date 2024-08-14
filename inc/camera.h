@@ -8,7 +8,6 @@
 
 typedef struct {
 	SVECTOR rot;
-	SVECTOR trot;
 
 	VECTOR trans;
 	VECTOR ttrans;
@@ -16,10 +15,8 @@ typedef struct {
 	MATRIX mat;
 } CP_Camera;
 
-extern CP_Camera camera;
+void camInit(CP_Camera *camera);
 
-void camInit(void);
-
-void camUpdate(void);
+void camUpdate(CP_Camera *camera);
 
 #endif // !GUARD_CITYPEEP_CAMERA_H_

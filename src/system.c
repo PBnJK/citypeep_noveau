@@ -12,7 +12,6 @@
 
 #include "actor.h"
 #include "audio.h"
-#include "camera.h"
 #include "common.h"
 #include "dialogue.h"
 #include "gfx.h"
@@ -24,10 +23,10 @@
 #include "cp_memory.h"
 
 static void _vsyncUpdate(void) {
+	actorUpdateAll(); /* Timing critical */
 	audioUpdate();
-	camUpdate();
+	playerUpdate();
 	dialogueUpdate();
-	actorUpdateAll();
 }
 
 static void cdInit(void) {
@@ -58,7 +57,6 @@ void sysInit(void) {
 	cdInit();
 	audioInit();
 	menuInit();
-	camInit();
 	playerInit();
 
 	VSyncCallback(_vsyncUpdate);

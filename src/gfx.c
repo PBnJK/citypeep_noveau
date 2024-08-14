@@ -8,7 +8,6 @@
 #include <libgpu.h>
 
 #include <inline_n.h>
-#include "camera.h"
 #include "cpu_macros.h"
 
 #include "common.h"
@@ -16,6 +15,7 @@
 #include "image.h"
 #include "sprite.h"
 #include "system.h"
+#include "player.h"
 
 #include "gfx.h"
 
@@ -687,7 +687,7 @@ void gfxDrawMeshWithMatrix(CP_Mesh *poly, MATRIX *matrix) {
 	MulMatrix0(&lightMatrix, &omtx, &lmtx);
 	gte_SetLightMatrix(&lmtx);
 
-	CompMatrixLV(&camera.mat, &omtx, &omtx);
+	CompMatrixLV(&player.camera.mat, &omtx, &omtx);
 
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
