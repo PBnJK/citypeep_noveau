@@ -132,17 +132,6 @@ void gfxInitMesh(CP_Mesh *mesh) {
 }
 
 void gfxFreeMesh(CP_Mesh *mesh) {
-	if( mesh->flags.textured ) {
-		memFree(mesh->uvidxs);
-		memFree(mesh->uvs);
-	}
-
-	memFree(mesh->verts);
-	memFree(mesh->faces);
-	memFree(mesh->colors);
-	memFree(mesh->nidxs);
-	memFree(mesh->normals);
-
 	mesh = NULL;
 }
 
@@ -177,20 +166,10 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 		mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
 
 		mesh->tcount = *data++;
-
-		mesh->uvidxs = memAlloc(mesh->fcount * sizeof(*mesh->uvidxs));
-		mesh->uvs = memAlloc(mesh->tcount * sizeof(*mesh->uvs));
 		++size;
 	}
 
-	mesh->verts = memAlloc(mesh->vcount * sizeof(*mesh->verts));
-	mesh->faces = memAlloc(mesh->fcount * sizeof(*mesh->faces));
 	mesh->ccount = (mesh->flags.gouraud) ? mesh->vcount : mesh->fcount;
-
-	mesh->colors = memAlloc(mesh->ccount * sizeof(*mesh->colors));
-
-	mesh->nidxs = memAlloc(mesh->fcount * sizeof(*mesh->nidxs));
-	mesh->normals = memAlloc(mesh->ncount * sizeof(*mesh->normals));
 
 	if( mesh->flags.gouraud ) {
 		for( ; i < mesh->vcount; ++i ) {
@@ -336,59 +315,23 @@ void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to) {
 	to->clut = from->clut;
 
 	to->vcount = from->vcount;
-	to->fcount = from->fcount;
-	to->ccount = from->ccount;
-	to->tcount = from->tcount;
-	to->ncount = from->ncount;
-
-	to->verts = from->verts;
-	to->faces = from->faces;
-	to->colors = from->colors;
-	to->nidxs = from->nidxs;
-	to->normals = from->normals;
-
-	if( from->flags.textured ) {
-		to->uvidxs = from->uvidxs;
-		to->uvs = from->uvs;
-	}
-}
-
-void gfxDeepCopyMesh(CP_Mesh *from, CP_Mesh *to) {
-	copyVector(&to->rot, &from->rot);
-	copyVector(&to->trans, &from->trans);
-	copyVector(&to->scale, &from->scale);
-
-	to->flags = from->flags;
-	to->type = from->type;
-
-	to->tpage = from->tpage;
-	to->clut = from->clut;
-
-	to->vcount = from->vcount;
-	to->verts = memAlloc(from->vcount * sizeof(*from->verts));
 	cp_memcpy(to->verts, from->verts, from->vcount);
 
 	to->fcount = from->fcount;
-	to->faces = memAlloc(from->fcount * sizeof(*from->faces));
 	cp_memcpy(to->faces, from->faces, from->fcount);
 
-	to->nidxs = memAlloc(from->fcount * sizeof(*from->nidxs));
 	cp_memcpy(to->nidxs, from->nidxs, from->fcount);
 
 	to->ccount = from->ccount;
-	to->colors = memAlloc(from->ccount * sizeof(*from->colors));
 	cp_memcpy(to->colors, from->colors, from->ccount);
 
 	to->ncount = from->ncount;
-	to->normals = memAlloc(from->ncount * sizeof(*from->normals));
 	cp_memcpy(to->normals, from->normals, from->ncount);
 
 	if( from->flags.textured ) {
-		to->uvidxs = memAlloc(from->fcount * sizeof(*from->uvidxs));
 		cp_memcpy(to->uvidxs, from->uvidxs, from->fcount);
 
 		to->tcount = from->tcount;
-		to->uvs = memAlloc(from->tcount * sizeof(*from->uvs));
 		cp_memcpy(to->uvs, from->uvs, from->tcount);
 	}
 }
@@ -659,10 +602,12 @@ void gfxDrawMeshNoMatrix(CP_Mesh *poly) {
 	ScaleMatrix(&omtx, &poly->scale);
 
 	MulMatrix0(&lightMatrix, &omtx, &lmtx);
+	gte_SetLightMatrix(&lmtx);
+
+	CompMatrixLV(&player.camera.mat, &omtx, &omtx);
 
 	gte_SetRotMatrix(&omtx);
 	gte_SetTransMatrix(&omtx);
-	gte_SetLightMatrix(&lmtx);
 
 	gfxDrawMesh(poly);
 

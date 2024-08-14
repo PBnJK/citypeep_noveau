@@ -15,6 +15,17 @@
 
 #define PACKET_LENGTH 32768
 
+#define MAX_VERTS 256
+#define MAX_COLORS 128
+
+#define MAX_FACES 128
+
+#define MAX_UVIDXS 64
+#define MAX_UVS 64
+
+#define MAX_NIDXS 64
+#define MAX_NORMALS 64
+
 typedef enum {
 	MT_F3 = 0,
 	MT_G3 = 1,
@@ -39,15 +50,15 @@ typedef struct CP_Mesh {
 
 	/* Array of vertices */
 	int vcount;
-	SVECTOR *verts;
+	SVECTOR verts[MAX_VERTS];
 
 	/* Array of colors */
 	int ccount;
-	CVECTOR *colors;
+	CVECTOR colors[MAX_COLORS];
 
 	/* Array of indices to vertices */
 	int fcount;
-	SVECTOR *faces;
+	SVECTOR faces[MAX_FACES];
 
 	/* Texture */
 	TIM_IMAGE tex;
@@ -56,13 +67,13 @@ typedef struct CP_Mesh {
 
 	/* Array of UV data */
 	int tcount;
-	SVECTOR *uvidxs;
-	CP_UV *uvs;
+	SVECTOR uvidxs[MAX_UVIDXS];
+	CP_UV uvs[MAX_UVS];
 
 	/* Normals data */
 	int ncount;
-	SVECTOR *nidxs;
-	SVECTOR *normals;
+	SVECTOR nidxs[MAX_NIDXS];
+	SVECTOR normals[MAX_NORMALS];
 } CP_Mesh;
 
 void gfxInit(void);
@@ -76,7 +87,6 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh);
 u_int gfxLoadMesh(const char *PATH, const char *TEX, CP_Mesh *mesh);
 
 void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to);
-void gfxDeepCopyMesh(CP_Mesh *from, CP_Mesh *to);
 
 void gfxDrawMesh(CP_Mesh *mesh);
 void gfxDrawMeshNoMatrix(CP_Mesh *poly);
@@ -92,3 +102,4 @@ void gfxSetTPage(u_short tpage);
 void gfxSetSTP(int stp);
 
 #endif // !GUARD_CITYPEEP_GFX_H_
+

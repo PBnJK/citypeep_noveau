@@ -5,6 +5,7 @@
       "-I/home/pedrob/projects/citypeep/thirdparty/nugget/psyq/include",
       "-I/home/pedrob/projects/citypeep/psyq/include",
       "-I/home/pedrob/projects/citypeep/inc",
+      "-I/home/pedrob/projects/citypeep/data",
       "-DDEBUG",
       "-ffunction-sections",
       "-fdata-sections",

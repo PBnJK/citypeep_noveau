@@ -13,6 +13,8 @@
 #include "gfx.h"
 #include "system.h"
 
+#include "mdl_player.h"
+
 static void _draw(void) {
 	actorDrawAll();
 	dialogueDraw();
@@ -25,6 +27,7 @@ int main(void) {
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
+		gfxDrawMeshNoMatrix(&PLAYER_PLAYER);
 		_draw();
 	}
 

@@ -29,6 +29,11 @@ class Mesh:
 
         self.output: str = self.name[:-4] + ".m"
 
+        self.h_output: str = self.name[:-4] + ".h"
+
+        self.h_name: str = self.name[:-4].replace("/", "_").upper()
+        self.h_guard: str = f"GUARD_CITYPEEP_DATA_MODEL_{self.h_name}_H_"
+
     def is_textured(self) -> bool:
         return self.mtype in ["ft3", "gt3"]
 
@@ -309,6 +314,125 @@ class Mesh:
                 self.__save_uvs(f)
                 self.__save_uvidxs(f)
 
+    def __hsave_header(self, file) -> None:
+        print("0. Saving header...")
+
+        file.write("\t.rot={0, 0, 0},\n")
+        file.write("\t.trans={0, 0, 0},\n")
+        file.write("\t.scale={4096, 4096, 4096},\n\n")
+
+        file.write(f"\t.type={self.TYPE_MAP[self.mtype]},\n")
+        file.write("\t.flags={.visible=1},\n\n")
+
+    def __hsave_verts(self, file) -> None:
+        print("\n1. Saving verts...")
+
+        file.write(f"\t.vcount={self.vcount},\n")
+        file.write("\t.verts={\n")
+
+        for v in self.verts:
+            file.write(f"\t\t{{ {v[0]}, {v[1]}, {v[2]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def __hsave_colors(self, file) -> None:
+        print("\n2. Saving colors...")
+
+        file.write(f"\t.ccount={self.ccount},\n")
+        file.write("\t.colors={\n")
+
+        for c in self.verts:
+            file.write(f"\t\t{{ {c[0]}, {c[1]}, {c[2]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def __hsave_faces(self, file) -> None:
+        print("\n3. Saving faces...")
+
+        file.write(f"\t.fcount={self.fcount},\n")
+        file.write("\t.faces={\n")
+
+        for f in self.faces:
+            file.write(f"\t\t{{ {f[0]}, {f[1]}, {f[2]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def __hsave_uvs(self, file) -> None:
+        print("\n4. Saving UVs...")
+
+        file.write(f"\t.tcount={self.tcount},\n")
+        file.write("\t.uvs={\n")
+
+        for t in self.uvs:
+            file.write(f"\t\t{{ {t[0]}, {t[1]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def __hsave_uvidxs(self, file) -> None:
+        print("\n5. Saving UV Indices...")
+
+        file.write("\t.uvidxs={\n")
+
+        for t in self.uvidxs:
+            file.write(f"\t\t{{ {t[0]}, {t[1]}, {t[2]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def __hsave_normals(self, file) -> None:
+        print("\n6. Saving normals...")
+
+        file.write(f"\t.ncount={self.ncount},\n")
+        file.write("\t.normals={\n")
+
+        for n in self.normals:
+            file.write(f"\t\t{{ {n[0]}, {n[1]}, {n[2]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def __hsave_nidxs(self, file) -> None:
+        print("\n7. Saving normal indices...")
+
+        file.write("\t.nidxs={\n")
+
+        for n in self.nidxs:
+            file.write(f"\t\t{{ {n[0]}, {n[1]}, {n[2]}, 0 }},\n")
+
+        file.write("\t},\n\n")
+
+    def save_to_header(self) -> None:
+        print(f"Saving mesh to {self.h_output}:\n")
+
+        with open(self.h_output, "w") as f:
+            f.write(f"#ifndef {self.h_guard}\n")
+            f.write(f"#define {self.h_guard}\n\n")
+
+            f.write('#include "gfx.h"\n\n')
+
+            f.write(f"static const CP_Mesh {self.h_name} = {{\n")
+
+            self.vcount = len(self.verts)
+            self.ccount = len(self.vcolors)
+            self.fcount = len(self.faces)
+            self.ncount = len(self.normals)
+
+            if self.is_textured():
+                self.tcount = len(self.uvs)
+
+            self.__hsave_header(f)
+            self.__hsave_verts(f)
+            self.__hsave_colors(f)
+            self.__hsave_faces(f)
+            self.__hsave_normals(f)
+            self.__hsave_nidxs(f)
+
+            # if self.is_textured():
+            #    self.__hsave_uvs(f)
+            #    self.__hsave_uvidxs(f)
+
+            f.write("};\n\n")
+
+            f.write(f"#endif // !{self.h_guard}\n")
+
 
 if len(sys.argv) != 3:
     print("usage: python image_conv.py [obj] [type]")
@@ -338,3 +462,4 @@ with open(mesh.name) as f:
                 mesh.add_uv(line[1:])
 
 mesh.save()
+mesh.save_to_header()
