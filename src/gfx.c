@@ -315,24 +315,24 @@ void gfxCopyMesh(CP_Mesh *from, CP_Mesh *to) {
 	to->clut = from->clut;
 
 	to->vcount = from->vcount;
-	cp_memcpy(to->verts, from->verts, from->vcount);
+	__builtin_memcpy(to->verts, from->verts, from->vcount);
 
 	to->fcount = from->fcount;
-	cp_memcpy(to->faces, from->faces, from->fcount);
+	__builtin_memcpy(to->faces, from->faces, from->fcount);
 
-	cp_memcpy(to->nidxs, from->nidxs, from->fcount);
+	__builtin_memcpy(to->nidxs, from->nidxs, from->fcount);
 
 	to->ccount = from->ccount;
-	cp_memcpy(to->colors, from->colors, from->ccount);
+	__builtin_memcpy(to->colors, from->colors, from->ccount);
 
 	to->ncount = from->ncount;
-	cp_memcpy(to->normals, from->normals, from->ncount);
+	__builtin_memcpy(to->normals, from->normals, from->ncount);
 
 	if( from->flags.textured ) {
-		cp_memcpy(to->uvidxs, from->uvidxs, from->fcount);
+		__builtin_memcpy(to->uvidxs, from->uvidxs, from->fcount);
 
 		to->tcount = from->tcount;
-		cp_memcpy(to->uvs, from->uvs, from->tcount);
+		__builtin_memcpy(to->uvs, from->uvs, from->tcount);
 	}
 }
 
@@ -679,7 +679,7 @@ void gfxDrawFont(CP_Font *font, u_short x, u_short y) {
 
 	setXY0(sprt, x, y);
 	setUV0(sprt, font->uv.u, font->uv.v);
-	setRGB0(sprt, 127, 127, 127);
+	setRGB0(sprt, font->color.r, font->color.g, font->color.b);
 	setWH(sprt, font->cw, font->ch);
 	sprt->clut = font->clut;
 

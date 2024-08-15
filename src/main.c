@@ -15,12 +15,10 @@
 
 #include "mdl_player.h"
 
-static const char *DIALOG[] = {
-	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar "
-	"turpis tincidunt leo lobortis molestie. Maecenas gravida tempor mauris ac "
-	"viverra. Maecenas at maximus est, laoreet tincidunt nunc.",
-	""
-};
+static const char *DIALOG[]
+	= { "This is a really " DCMD_COLOR(
+			"\xFF", "\x00", "\x00") "really" DCMD_RESET_COLOR " long line!",
+		  "" };
 
 static void _draw(void) {
 	actorDrawAll();
@@ -32,8 +30,9 @@ int main(void) {
 	LOG("=== GAME ENTERED ===\n\n");
 	sysInit();
 
-	dialogueStart(DIALOG);
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
+
+	dialogueStart(DIALOG);
 	while( 1 ) {
 		gfxDrawMeshNoMatrix(&PLAYER_PLAYER);
 		_draw();

@@ -27,7 +27,11 @@ typedef int bool;
 	(((x) >> 24) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0x00FF0000)           \
 		| ((x) << 24))
 
-void *cp_memcpy(void *restrict dst, const void *restrict src, size_t cnt);
-size_t cp_strlen(const char *STR);
+#define STRINGIFY_(S) #S
+#define STRINGIFY(S) STRINGIFY_(S)
+
+#define PLAYER_NAME_SIZE 8
+
+extern char gPlayerName[PLAYER_NAME_SIZE];
 
 #endif // !GUARD_CITYPEEP_COMMON_H_

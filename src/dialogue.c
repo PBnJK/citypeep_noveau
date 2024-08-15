@@ -18,14 +18,26 @@ static char *_line = NULL;
 static u_short _linelen = 0;
 
 static u_short _curchar = 0;
+static u_short _actualchar = 0;
 static u_short _lastspace = 0;
 
 /* Ticks until next character should be shown */
-static short _nextchar_time = DSPEED_NORMAL;
+static short _speed = DSPEED_NORMAL;
 static short _tick = 0;
 
 static void _end(void) {
 	_dialogueOn = false;
+}
+
+static u_int _dstrlen(const char *STR) {
+	const char *S;
+	for( S = STR; *S; ++S ) {
+		if( *S == '\x8A' ) {
+			S += 3;
+		}
+	}
+
+	return (S - STR);
 }
 
 static void _advance(void) {
@@ -34,15 +46,50 @@ static void _advance(void) {
 		return;
 	}
 
-	_linelen = cp_strlen(_line);
+	_linelen = _dstrlen(_line);
+}
+
+static void _processCmd(void) {
+	switch( _line[_curchar] ) {
+	case '\x80': /* DCMD_SPD_INST */
+		_speed = DSPEED_INSTANT;
+		break;
+	case '\x81': /* DCMD_SPD_FAST */
+		_speed = DSPEED_FAST;
+		break;
+	case '\x82': /* DCMD_SPD_NORM */
+		_speed = DSPEED_NORMAL;
+		break;
+	case '\x83': /* DCMD_SPD_SLOW */
+		_speed = DSPEED_SLOW;
+		break;
+	case '\x84': /* DCMD_WAIT_4V */
+		_tick = -4;
+		break;
+	case '\x85': /* DCMD_WAIT_8V */
+		_tick = -8;
+		break;
+	case '\x86': /* DCMD_WAIT_12V */
+		_tick = -12;
+		break;
+	case '\x87': /* DCMD_WAIT_16V */
+		_tick = -16;
+		break;
+	case '\x8A': /* DCMD_COLOR */
+		_curchar += 3;
+	}
 }
 
 static void _nextchar(void) {
 	_tick = 0;
 
-	++_curchar;
-	if( _curchar >= _linelen ) {
+	if( ++_curchar >= _linelen ) {
 		_lineDone = true;
+		return;
+	}
+
+	if( _line[_curchar] < 0 ) {
+		_processCmd();
 		return;
 	}
 
@@ -50,14 +97,12 @@ static void _nextchar(void) {
 		_lastspace = _curchar;
 	}
 
-	if( _curchar % 26 == 0 ) {
-		if( !_lastspace ) {
-			/* Line too long, no place to break. Break mid-word... */
-			_line[_curchar - 2] = '\n';
-			return;
+	if( ++_actualchar == 26 ) {
+		if( _lastspace > 0 ) {
+			_line[_lastspace] = '\n';
 		}
 
-		_line[_lastspace] = '\n';
+		_actualchar = _curchar - _lastspace;
 		_lastspace = 0;
 	}
 }
@@ -67,7 +112,7 @@ void dialogueStart(const char **DIALOGUE) {
 
 	_lines = (char **)DIALOGUE;
 	_line = *_lines;
-	_linelen = cp_strlen(_line);
+	_linelen = _dstrlen(_line);
 
 	_tick = -4; /* Wait a bit until starting */
 }
@@ -77,7 +122,7 @@ void dialogueUpdate(void) {
 		return;
 	}
 
-	if( ++_tick >= _nextchar_time ) {
+	if( ++_tick >= _speed ) {
 		_nextchar();
 	}
 }

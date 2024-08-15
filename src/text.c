@@ -23,6 +23,10 @@ void textInitFont(CP_Font *font, const char *PATH, u_char cw, u_char ch) {
 
 	setWH(font, img.prect->w << TIM_MODE, img.prect->h);
 
+	font->color.r = 128;
+	font->color.g = 128;
+	font->color.b = 128;
+
 	font->cw = cw;
 	font->ch = ch;
 
@@ -36,51 +40,17 @@ void textInitFont(CP_Font *font, const char *PATH, u_char cw, u_char ch) {
 }
 
 void textDraw(CP_Font *font, u_short x, u_short y, const char *TEXT) {
-	u_short i = 0, init_pos = x;
-	char c = 0;
-
-	for( ; i < MAX_TEXT_SIZE; ++i ) {
-		c = TEXT[i];
-
-		if( c == '\0' ) {
-			break;
-		}
-
-		if( c < 0 ) {
-			continue;
-		}
-
-		switch( c ) {
-		case '\n': /* Newline */
-			x = init_pos;
-			y += font->ch;
-			break;
-		case ' ': /* Skip whitespace */
-			x += font->cw;
-			break;
-		default:
-			c -= 33;
-
-			font->uv.u = font->cw * (c % font->cr);
-			font->uv.u += font->baseUV.u;
-
-			font->uv.v = font->ch * (c / font->cr);
-			font->uv.v += font->baseUV.v;
-
-			gfxDrawFont(font, x, y + 8);
-
-			x += font->cw;
-			break;
-		}
-	}
-
-	gfxSetTPage(font->tPage);
+	textDrawN(font, x, y, TEXT, MAX_TEXT_SIZE);
 }
 
 void textDrawN(
 	CP_Font *font, u_short x, u_short y, const char *TEXT, u_short n) {
 	u_short i = 0, init_pos = x;
 	char c = 0;
+
+	font->color.r = 128;
+	font->color.g = 128;
+	font->color.b = 128;
 
 	for( ; i < n; ++i ) {
 		c = TEXT[i];
@@ -90,6 +60,14 @@ void textDrawN(
 		}
 
 		if( c < 0 ) {
+			switch( c ) {
+			case '\x8A':
+				font->color.r = TEXT[++i];
+				font->color.g = TEXT[++i];
+				font->color.b = TEXT[++i];
+				break;
+			}
+
 			continue;
 		}
 

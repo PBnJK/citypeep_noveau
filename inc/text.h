@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 
+#include <libgte.h>
+
 #include "math.h"
 
 #define MAX_TEXT_SIZE 256
@@ -12,6 +14,7 @@ typedef struct {
 	u_short clut;
 	CP_UV uv;
 	CP_UV baseUV;
+	CVECTOR color;
 	u_char w, h;
 	u_char cw, ch; /* Character width/height */
 	u_char cr, cc; /* Characters per row/column */
