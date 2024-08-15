@@ -15,6 +15,13 @@
 
 #include "mdl_player.h"
 
+static const char *DIALOG[] = {
+	"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar "
+	"turpis tincidunt leo lobortis molestie. Maecenas gravida tempor mauris ac "
+	"viverra. Maecenas at maximus est, laoreet tincidunt nunc.",
+	""
+};
+
 static void _draw(void) {
 	actorDrawAll();
 	dialogueDraw();
@@ -25,6 +32,7 @@ int main(void) {
 	LOG("=== GAME ENTERED ===\n\n");
 	sysInit();
 
+	dialogueStart(DIALOG);
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
 	while( 1 ) {
 		gfxDrawMeshNoMatrix(&PLAYER_PLAYER);

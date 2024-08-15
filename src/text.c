@@ -35,16 +35,20 @@ void textInitFont(CP_Font *font, const char *PATH, u_char cw, u_char ch) {
 	font->baseUV = font->uv;
 }
 
-void textDraw(CP_Font *font, u_char x, u_char y, const char *TEXT) {
+void textDraw(CP_Font *font, u_short x, u_short y, const char *TEXT) {
 	u_short i = 0, init_pos = x;
 	char c = 0;
 
 	for( ; i < MAX_TEXT_SIZE; ++i ) {
-		if( TEXT[i] == '\0' ) {
+		c = TEXT[i];
+
+		if( c == '\0' ) {
 			break;
 		}
 
-		c = TEXT[i];
+		if( c < 0 ) {
+			continue;
+		}
 
 		switch( c ) {
 		case '\n': /* Newline */
@@ -73,16 +77,21 @@ void textDraw(CP_Font *font, u_char x, u_char y, const char *TEXT) {
 	gfxSetTPage(font->tPage);
 }
 
-void textDrawN(CP_Font *font, u_char x, u_char y, const char *TEXT, u_short n) {
+void textDrawN(
+	CP_Font *font, u_short x, u_short y, const char *TEXT, u_short n) {
 	u_short i = 0, init_pos = x;
 	char c = 0;
 
 	for( ; i < n; ++i ) {
-		if( TEXT[i] == '\0' ) {
+		c = TEXT[i];
+
+		if( c == '\0' ) {
 			break;
 		}
 
-		c = TEXT[i];
+		if( c < 0 ) {
+			continue;
+		}
 
 		switch( c ) {
 		case '\n': /* Newline */

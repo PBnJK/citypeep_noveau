@@ -9,16 +9,20 @@
 #include "common.h"
 #include "menu.h"
 
-static bool _dialogueOn = false;
-static bool _lineDone = false;
+static bool _dialogueOn = false; /* Dialogue box up? */
+static bool _lineDone = false; /* Current dialogue line done? */
 
+/* Current line info */
 static char **_lines = NULL;
 static char *_line = NULL;
 static u_short _linelen = 0;
 
 static u_short _curchar = 0;
+static u_short _lastspace = 0;
 
-static u_short _time = 0;
+/* Ticks until next character should be shown */
+static short _nextchar_time = DSPEED_NORMAL;
+static short _tick = 0;
 
 static void _end(void) {
 	_dialogueOn = false;
@@ -34,11 +38,27 @@ static void _advance(void) {
 }
 
 static void _nextchar(void) {
-	_time = 0;
+	_tick = 0;
 
 	++_curchar;
 	if( _curchar >= _linelen ) {
 		_lineDone = true;
+		return;
+	}
+
+	if( _line[_curchar] == ' ' ) {
+		_lastspace = _curchar;
+	}
+
+	if( _curchar % 26 == 0 ) {
+		if( !_lastspace ) {
+			/* Line too long, no place to break. Break mid-word... */
+			_line[_curchar - 2] = '\n';
+			return;
+		}
+
+		_line[_lastspace] = '\n';
+		_lastspace = 0;
 	}
 }
 
@@ -49,7 +69,7 @@ void dialogueStart(const char **DIALOGUE) {
 	_line = *_lines;
 	_linelen = cp_strlen(_line);
 
-	_time = 0;
+	_tick = -4; /* Wait a bit until starting */
 }
 
 void dialogueUpdate(void) {
@@ -57,7 +77,7 @@ void dialogueUpdate(void) {
 		return;
 	}
 
-	if( ++_time >= 4 ) {
+	if( ++_tick >= _nextchar_time ) {
 		_nextchar();
 	}
 }
