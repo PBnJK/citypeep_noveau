@@ -4,8 +4,8 @@
 #include <sys/types.h>
 
 typedef struct {
-	u_char u;
-	u_char v;
+	u_short u;
+	u_short v;
 } CP_UV;
 
 int isin(int x);

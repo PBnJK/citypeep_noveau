@@ -15,6 +15,7 @@
 typedef struct {
 	u_int active : 1;
 	u_int visible : 1;
+	u_int textured : 1;
 } CP_ActorFlags;
 
 typedef struct {
@@ -41,7 +42,7 @@ void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
 void actorExit(void);
 
 int actorLoad(const char *PATH, const char *TEX);
-int actorLoadPtr(const CP_Actor *ACTOR, const char *TEX);
+int actorLoadPtr(CP_Actor *actor, const char *TEX);
 void actorLoadInto(const char *PATH, const char *TEX, CP_Actor *actor);
 
 void actorFreePointer(CP_Actor *actor);

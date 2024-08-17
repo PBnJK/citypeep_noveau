@@ -135,6 +135,12 @@ void gfxFreeMesh(CP_Mesh *mesh) {
 	mesh = NULL;
 }
 
+void gfxSetupTex(CP_Mesh *mesh) {
+	mesh->tpage = getTPage(
+		mesh->tex.mode & 0x3, 0, mesh->tex.prect->x, mesh->tex.prect->y);
+	mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
+}
+
 int gfxLoadTex(CP_Mesh *mesh, const char *TEX, int *width) {
 	if( !mesh->flags.textured ) {
 		return 0;
@@ -152,9 +158,7 @@ int gfxLoadTex(CP_Mesh *mesh, const char *TEX, int *width) {
 		}
 	}
 
-	mesh->tpage = getTPage(
-		mesh->tex.mode & 0x3, 0, mesh->tex.prect->x, mesh->tex.prect->y);
-	mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
+	gfxSetupTex(mesh);
 
 	return 1;
 }
@@ -176,8 +180,6 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 
 	size += gfxLoadTex(mesh, TEX, &actualW);
 	mesh->tcount = *data++;
-
-	if( mesh->flags.textured ) { }
 
 	mesh->ccount = (mesh->flags.gouraud) ? mesh->vcount : mesh->fcount;
 
@@ -539,9 +541,6 @@ void gfxDrawMesh(CP_Mesh *poly) {
 		polygt3 = (POLY_GT3 *)nextPrimitive;
 	}
 
-	draw[0].tpage = poly->tpage;
-	draw[1].tpage = poly->tpage;
-
 	for( u_int i = 0; i < poly->fcount; ++i ) {
 		gte_ldv3(&poly->verts[poly->faces[i].vx],
 			&poly->verts[poly->faces[i].vy], &poly->verts[poly->faces[i].vz]);
@@ -703,9 +702,9 @@ void gfxSetTPage(u_short tpage) {
 	dr_tpage = (DR_TPAGE *)nextPrimitive;
 	setDrawTPage(dr_tpage, 0, 1, tpage);
 
-	addPrim(ot[activeBuffer], dr_tpage);
-	++dr_tpage;
+	addPrim(&ot[activeBuffer], dr_tpage);
 
+	++dr_tpage;
 	nextPrimitive = (char *)dr_tpage;
 }
 
@@ -713,8 +712,8 @@ void gfxSetSTP(int stp) {
 	dr_stp = (DR_STP *)nextPrimitive;
 	setDrawStp(dr_stp, stp);
 
-	addPrim(ot[activeBuffer], dr_stp);
-	++dr_stp;
+	addPrim(&ot[activeBuffer], dr_stp);
 
+	++dr_stp;
 	nextPrimitive = (char *)dr_stp;
 }

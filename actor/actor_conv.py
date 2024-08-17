@@ -19,9 +19,9 @@ class Actor:
         self.name: str = args[1]
 
         self.output: str = self.name[:-4] + ".act"
-        self.h_output: str = f"../data/act_{self.name[:-4]}.h"
-
+        
         self.h_name: str = self.name[:-4].replace("/", "_")
+        self.h_output: str = f"../data/act_{self.h_name}.h"
         self.h_guard: str = f"GUARD_CITYPEEP_DATA_ACTOR_{self.h_name.upper()}_H_"
 
         self.old_path: str = ""

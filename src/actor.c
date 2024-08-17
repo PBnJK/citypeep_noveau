@@ -14,6 +14,7 @@
 #include "anim.h"
 #include "cp_memory.h"
 #include "gfx.h"
+#include "image.h"
 #include "stddef.h"
 #include "system.h"
 
@@ -51,12 +52,38 @@ int actorLoad(const char *PATH, const char *TEX) {
 	return gLoadedActors - 1;
 }
 
-int actorLoadPtr(const CP_Actor *ACTOR, const char *TEX) {
+int actorLoadPtr(CP_Actor *actor, const char *TEX) {
 	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
 		return -1;
 	}
 
-	gActors[gLoadedActors++] = *ACTOR;
+	TIM_IMAGE img;
+	CP_Mesh *mesh;
+	imgLoad(TEX, &img);
+
+	int width = img.prect->w;
+	switch( img.mode & 0x3 ) {
+	case 0:
+		width <<= 1;
+	case 1:
+		width <<= 1;
+	}
+
+	for( u_int i = 0; i < actor->meshCount; ++i ) {
+		mesh = &actor->mesh[i];
+
+		mesh->tex = img;
+		gfxSetupTex(mesh);
+
+		for( u_int j = 0; j < mesh->tcount; ++j ) {
+			mesh->uvs[j].u = (width * mesh->uvs[j].u) / 4096;
+			mesh->uvs[j].v = (img.prect->h * mesh->uvs[j].v) / 4096;
+		}
+	}
+
+	actor->flags.textured = 1;
+
+	gActors[gLoadedActors++] = *actor;
 
 	return gLoadedActors - 1;
 }
@@ -198,6 +225,8 @@ void actorDraw(CP_Actor *actor) {
 	for( int i = 0; i < actor->meshCount; ++i ) {
 		gfxDrawMeshWithMatrix(&actor->mesh[i], &actor->mat);
 	}
+
+	gfxSetTPage(actor->mesh[0].tpage);
 }
 
 void actorDrawAll(void) {

@@ -216,7 +216,7 @@ class Mesh:
             self.tcount = len(self.uvs)
 
             if self.tcount % 2:
-                self.tcount.append([0, 0, 0])
+                self.uvs.append([0, 0, 0])
                 self.tcount += 1
 
             file.write(self.tcount.to_bytes(4, byteorder="little", signed=False))
@@ -321,7 +321,12 @@ class Mesh:
         file.write("\t.scale={4096, 4096, 4096},\n\n")
 
         file.write(f"\t.type={self.TYPE_MAP[self.mtype]},\n")
-        file.write("\t.flags={.visible=1},\n\n")
+        file.write("\t.flags={\n")
+        file.write("\t\t.visible=1,\n")
+        file.write(f"\t\t.textured={int(self.is_textured())},\n")
+        file.write(f"\t\t.gouraud={int(self.is_gouraud())},\n")
+
+        file.write("\t},\n\n")
 
     def __hsave_verts(self, file) -> None:
         print("\n1. Saving verts...")
@@ -363,7 +368,7 @@ class Mesh:
         file.write("\t.uvs={\n")
 
         for t in self.uvs:
-            file.write(f"\t\t{{ {t[0]}, {t[1]}, 0 }},\n")
+            file.write(f"\t\t{{ {t[0]}, {t[1]} }},\n")
 
         file.write("\t},\n\n")
 
@@ -407,7 +412,7 @@ class Mesh:
 
             f.write('#include "gfx.h"\n\n')
 
-            f.write(f"static CP_Mesh {self.h_name} = {{\n")
+            f.write(f"static const CP_Mesh {self.h_name} = {{\n")
 
             self.vcount = len(self.verts)
             self.ccount = len(self.vcolors)
@@ -424,9 +429,9 @@ class Mesh:
             self.__hsave_normals(f)
             self.__hsave_nidxs(f)
 
-            # if self.is_textured():
-            #    self.__hsave_uvs(f)
-            #    self.__hsave_uvidxs(f)
+            if self.is_textured():
+                self.__hsave_uvs(f)
+                self.__hsave_uvidxs(f)
 
             f.write("};\n\n")
 

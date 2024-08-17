@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<actor>
+	<model hpath="mdl_player_leg.h" hname="player_leg">
+		<trans>10 0 0</trans>
+		</model>
+
+	<model hpath="mdl_player_leg.h" hname="player_leg">
+		<trans>-10 0 0</trans>
+	</model>
+
+	<model hpath="mdl_player_skirt.h" hname="player_skirt">
+		<trans>0 -28 0</trans>
+	</model>
+
+	<model hpath="mdl_player_shirt.h" hname="player_shirt">
+		<trans>0 -56 0</trans>
+	</model>
+	
+	<model hpath="mdl_player_arm.h" hname="player_arm">
+		<trans>-20 -64 0</trans>
+	</model>
+
+	<model hpath="mdl_player_arm.h" hname="player_arm">
+		<trans>20 -64 0</trans>
+		<scale>-4096 4096 4096</scale>
+	</model>
+</actor>
