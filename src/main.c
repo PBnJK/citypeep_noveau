@@ -13,13 +13,6 @@
 #include "gfx.h"
 #include "system.h"
 
-#include "mdl_player.h"
-
-static const char *DIALOG[]
-	= { "This is a really " DCMD_COLOR(
-			"\xFF", "\x00", "\x00") "really" DCMD_RESET_COLOR " long line!",
-		  "" };
-
 static void _draw(void) {
 	actorDrawAll();
 	dialogueDraw();
@@ -31,10 +24,7 @@ int main(void) {
 	sysInit();
 
 	LOG("=== ENTERING MAIN LOOP ===\n\n");
-
-	dialogueStart(DIALOG);
 	while( 1 ) {
-		gfxDrawMeshNoMatrix(&PLAYER_PLAYER);
 		_draw();
 	}
 

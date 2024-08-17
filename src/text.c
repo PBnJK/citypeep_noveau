@@ -45,7 +45,7 @@ void textDraw(CP_Font *font, u_short x, u_short y, const char *TEXT) {
 
 void textDrawN(
 	CP_Font *font, u_short x, u_short y, const char *TEXT, u_short n) {
-	u_short i = 0, init_pos = x;
+	u_short i = 0, initialPos = x;
 	char c = 0;
 
 	font->color.r = 128;
@@ -73,7 +73,7 @@ void textDrawN(
 
 		switch( c ) {
 		case '\n': /* Newline */
-			x = init_pos;
+			x = initialPos;
 			y += font->ch;
 			break;
 		case ' ': /* Skip whitespace */

@@ -9,6 +9,9 @@
 #include "gfx.h"
 #include "anim.h"
 
+#define MAX_MESHES 32
+#define MAX_ANIMS 16
+
 typedef struct {
 	u_int active : 1;
 	u_int visible : 1;
@@ -22,16 +25,13 @@ typedef struct {
 
 	CP_ActorFlags flags;
 
-	u_int meshCount;
-	CP_Mesh *mesh;
-
-	u_short lcount;
-	u_short **links;
+	u_short meshCount;
+	CP_Mesh mesh[MAX_MESHES];
 
 	u_short animCounter;
 	u_short currFrame;
 
-	CP_Anim *anim;
+	CP_Anim anim[MAX_ANIMS];
 } CP_Actor;
 
 extern u_int gLoadedActors;
@@ -40,8 +40,9 @@ extern CP_Actor gActors[8];
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT);
 void actorExit(void);
 
-int actorLoad(const char *PATH);
-void actorLoadInto(const char *PATH, CP_Actor *actor);
+int actorLoad(const char *PATH, const char *TEX);
+int actorLoadPtr(const CP_Actor *ACTOR, const char *TEX);
+void actorLoadInto(const char *PATH, const char *TEX, CP_Actor *actor);
 
 void actorFreePointer(CP_Actor *actor);
 u_int actorFreeLast(void);

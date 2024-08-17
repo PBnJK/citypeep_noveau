@@ -135,6 +135,30 @@ void gfxFreeMesh(CP_Mesh *mesh) {
 	mesh = NULL;
 }
 
+int gfxLoadTex(CP_Mesh *mesh, const char *TEX, int *width) {
+	if( !mesh->flags.textured ) {
+		return 0;
+	}
+
+	imgLoad(TEX, &mesh->tex);
+
+	if( width ) {
+		*width = mesh->tex.prect->w;
+		switch( mesh->tex.mode & 0x3 ) {
+		case 0:
+			*width <<= 1;
+		case 1:
+			*width <<= 1;
+		}
+	}
+
+	mesh->tpage = getTPage(
+		mesh->tex.mode & 0x3, 0, mesh->tex.prect->x, mesh->tex.prect->y);
+	mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
+
+	return 1;
+}
+
 u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 	u_int size = 4;
 	int i = 0, actualW = 0;
@@ -150,24 +174,10 @@ u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh) {
 	mesh->fcount = *data++;
 	mesh->ncount = *data++;
 
-	if( mesh->flags.textured ) {
-		imgLoad(TEX, &mesh->tex);
+	size += gfxLoadTex(mesh, TEX, &actualW);
+	mesh->tcount = *data++;
 
-		actualW = mesh->tex.prect->w;
-		switch( mesh->tex.mode & 0x3 ) {
-		case 0:
-			actualW <<= 1;
-		case 1:
-			actualW <<= 1;
-		}
-
-		mesh->tpage = getTPage(
-			mesh->tex.mode & 0x3, 0, mesh->tex.prect->x, mesh->tex.prect->y);
-		mesh->clut = getClut(mesh->tex.crect->x, mesh->tex.crect->y);
-
-		mesh->tcount = *data++;
-		++size;
-	}
+	if( mesh->flags.textured ) { }
 
 	mesh->ccount = (mesh->flags.gouraud) ? mesh->vcount : mesh->fcount;
 

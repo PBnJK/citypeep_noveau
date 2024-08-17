@@ -30,8 +30,4 @@ typedef int bool;
 #define STRINGIFY_(S) #S
 #define STRINGIFY(S) STRINGIFY_(S)
 
-#define PLAYER_NAME_SIZE 8
-
-extern char gPlayerName[PLAYER_NAME_SIZE];
-
 #endif // !GUARD_CITYPEEP_COMMON_H_

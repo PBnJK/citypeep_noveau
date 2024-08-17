@@ -24,7 +24,6 @@ CP_Actor gActors[ACTOR_LIST_SIZE] = { 0 };
 
 void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 	actor->meshCount = MESH_COUNT;
-	actor->mesh = memAlloc(MESH_COUNT * sizeof(*actor->mesh));
 
 	actor->flags.active = 1;
 	actor->flags.visible = 1;
@@ -35,8 +34,6 @@ void actorInit(CP_Actor *actor, const u_int MESH_COUNT) {
 
 	actor->currFrame = 0;
 	actor->animCounter = 0;
-
-	actor->anim = memAlloc(sizeof(CP_Anim));
 }
 
 void actorExit(void) {
@@ -45,16 +42,26 @@ void actorExit(void) {
 	}
 }
 
-int actorLoad(const char *PATH) {
+int actorLoad(const char *PATH, const char *TEX) {
 	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
 		return -1;
 	}
 
-	actorLoadInto(PATH, &gActors[gLoadedActors++]);
+	actorLoadInto(PATH, TEX, &gActors[gLoadedActors++]);
 	return gLoadedActors - 1;
 }
 
-void actorLoadInto(const char *PATH, CP_Actor *actor) {
+int actorLoadPtr(const CP_Actor *ACTOR, const char *TEX) {
+	if( gLoadedActors >= ACTOR_LIST_SIZE ) {
+		return -1;
+	}
+
+	gActors[gLoadedActors++] = *ACTOR;
+
+	return gLoadedActors - 1;
+}
+
+void actorLoadInto(const char *PATH, const char *TEX, CP_Actor *actor) {
 	CP_Mesh *mesh;
 
 	u_long *loaded = sysLoadFileFromCD(PATH);
@@ -72,7 +79,7 @@ void actorLoadInto(const char *PATH, CP_Actor *actor) {
 			gfxCopyMesh(&actor->mesh[i - 1], mesh);
 			++data;
 		} else {
-			data += gfxLoadMeshPtr(data, "\\MDL\\TEX.TIM;1", mesh);
+			data += gfxLoadMeshPtr(data, TEX, mesh);
 		}
 
 		/* SVECTOR (2 bytes per member) */
@@ -110,8 +117,6 @@ void actorFreePointer(CP_Actor *actor) {
 
 	actor->currFrame = 0;
 	actor->animCounter = 0;
-
-	memFree(actor->anim);
 
 	actor = NULL;
 }
@@ -167,10 +172,6 @@ void actorNextFrame(CP_Actor *actor) {
 }
 
 void actorUpdate(CP_Actor *actor) {
-	if( actor->anim == NULL ) {
-		return;
-	}
-
 	if( actor->animCounter > actor->anim->resolution ) {
 		actorNextFrame(actor);
 		actor->animCounter = 0;

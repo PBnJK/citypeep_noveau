@@ -83,6 +83,8 @@ void gfxDisplay(void);
 void gfxInitMesh(CP_Mesh *mesh);
 void gfxFreeMesh(CP_Mesh *mesh);
 
+int gfxLoadTex(CP_Mesh *mesh, const char *TEX, int *width);
+
 u_int gfxLoadMeshPtr(u_long *data, const char *TEX, CP_Mesh *mesh);
 u_int gfxLoadMesh(const char *PATH, const char *TEX, CP_Mesh *mesh);
 
@@ -102,4 +104,3 @@ void gfxSetTPage(u_short tpage);
 void gfxSetSTP(int stp);
 
 #endif // !GUARD_CITYPEEP_GFX_H_
-

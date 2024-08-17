@@ -29,10 +29,9 @@ class Mesh:
 
         self.output: str = self.name[:-4] + ".m"
 
-        self.h_output: str = self.name[:-4] + ".h"
-
-        self.h_name: str = self.name[:-4].replace("/", "_").upper()
-        self.h_guard: str = f"GUARD_CITYPEEP_DATA_MODEL_{self.h_name}_H_"
+        self.h_name: str = self.name[:-4].replace("/", "_")
+        self.h_output: str = f"../data/mdl_{self.h_name}.h"
+        self.h_guard: str = f"GUARD_CITYPEEP_DATA_MODEL_{self.h_name.upper()}_H_"
 
     def is_textured(self) -> bool:
         return self.mtype in ["ft3", "gt3"]
@@ -408,7 +407,7 @@ class Mesh:
 
             f.write('#include "gfx.h"\n\n')
 
-            f.write(f"static const CP_Mesh {self.h_name} = {{\n")
+            f.write(f"static CP_Mesh {self.h_name} = {{\n")
 
             self.vcount = len(self.verts)
             self.ccount = len(self.vcolors)
