@@ -1,10 +1,10 @@
 <tim_project>
     <properties buffer_res="1" buffer_order="0"/>
     <tim_group name="global">
-        <tim file="font/big.tim"/>
-        <tim file="font/serif.tim"/>
-        <tim file="sprite/dialogue.tim"/>
-        <tim file="actor/player/player.tim" source="actor/player/player.png">
+        <tim file="big.tim"/>
+        <tim file="serif.tim"/>
+        <tim file="dialogue.tim"/>
+        <tim file="player.tim" source="player.png">
             <import_parameters>
                 <target_bpp>8</target_bpp>
                 <dithering>0</dithering>

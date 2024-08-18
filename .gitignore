@@ -9,5 +9,6 @@
 *.psx
 
 psyq/
+build/LICENSEJ.DAT
 
 .cache/

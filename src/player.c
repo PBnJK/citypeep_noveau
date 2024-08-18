@@ -32,6 +32,18 @@ void playerInit(void) {
 	act_player_player.mesh[5].trans = T_5;
 	act_player_player.mesh[5].scale = S_5;
 
+	act_player_player.mesh[6].rot = R_6;
+	act_player_player.mesh[6].trans = T_6;
+	act_player_player.mesh[6].scale = S_6;
+
+	act_player_player.mesh[7].rot = R_7;
+	act_player_player.mesh[7].trans = T_7;
+	act_player_player.mesh[7].scale = S_7;
+
+	act_player_player.mesh[8].rot = R_8;
+	act_player_player.mesh[8].trans = T_8;
+	act_player_player.mesh[8].scale = S_8;
+
 	actorLoadPtr(&act_player_player, "\\ACT\\PLAYER.TIM;1");
 
 	camInit(&player.camera);
