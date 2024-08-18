@@ -44,7 +44,7 @@ class Mesh:
 
     @staticmethod
     def __psx_vert(v: str) -> int:
-        return int(float(v) * 16.0)  # TODO: make scale controllable
+        return int(float(v) * 32.0)  # TODO: make scale controllable
 
     @staticmethod
     def __psx_color(c: str) -> int:

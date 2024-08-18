@@ -49,9 +49,13 @@ void camUpdate(CP_Camera *camera) {
 		camera->trans.vy += 4;
 	}
 
-	if( !PAD_P1.square ) { }
+	if( !PAD_P1.square ) {
+		camera->trans.vx -= 4;
+	}
 
-	if( !PAD_P1.circle ) { }
+	if( !PAD_P1.circle ) {
+		camera->trans.vx += 4;
+	}
 
 	RotMatrix(&camera->rot, &camera->mat);
 
