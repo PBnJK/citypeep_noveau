@@ -5,8 +5,8 @@ Translation:
 -x     |     +x
 <----- o ----->
        |
-	   |
-	+y v
+       |
+	  +y v
 
 you  screen
                   ^ -y
@@ -24,7 +24,7 @@ Rotation:
 -y     |     +y
 <----- o ----->
        |
-	   |
-	+x v
+	     |
+	  +x v
 
 z is the same as y, but in relation to x (?)

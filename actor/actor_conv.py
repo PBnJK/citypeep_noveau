@@ -19,7 +19,7 @@ class Actor:
         self.name: str = args[1]
 
         self.output: str = self.name[:-4] + ".act"
-        
+
         self.h_name: str = self.name[:-4].replace("/", "_")
         self.h_output: str = f"../data/act_{self.h_name}.h"
         self.h_guard: str = f"GUARD_CITYPEEP_DATA_ACTOR_{self.h_name.upper()}_H_"
@@ -48,11 +48,11 @@ class Actor:
                 self.__parse_model(child)
 
     @staticmethod
-    def __parse_vec(vec: str) -> int:
+    def __parse_vec(vec: str) -> list[int]:
         return [int(i) for i in vec.split(" ")]
 
-    def __parse_model(self, model) -> list[int]:
-        data = [
+    def __parse_model(self, model) -> None:
+        data: list[list[int]] = [
             [0, 0, 0],
             [0, 0, 0],
             [ONE, ONE, ONE],
@@ -62,20 +62,20 @@ class Actor:
             data.append("../model/" + model.attrib["path"])
             self.has_m = True
         else:
-            data.append("")
+            data.append([])
 
         if ("hpath" in model.attrib) and model.attrib["hpath"] not in self.used_hs:
             data.append(model.attrib["hpath"])
             self.used_hs.append(model.attrib["hpath"])
             self.has_h = True
         else:
-            data.append("")
+            data.append([])
 
         if "hname" in model.attrib:
             data.append(model.attrib["hname"])
             self.has_h = True
         else:
-            data.append("")
+            data.append([])
 
         for child in model:
             if child.tag == "rot":
@@ -151,15 +151,6 @@ class Actor:
         file.write("\t\t.visible=1\n")
         file.write("\t},\n")
 
-    @staticmethod
-    def __hsave_vector(file, vec: list[int], size: int) -> None:
-        file.write("{")
-
-        for item in vec:
-            file.write(f"{item}, ")
-
-        file.write("0}")
-
     def __hsave_models(self, file) -> None:
         print("2. Writing models:")
 
@@ -186,7 +177,7 @@ class Actor:
             f.write(f"#define {self.h_guard}\n\n")
 
             for model in self.models:
-                if model[HPATH_IDX] != "":
+                if model[HPATH_IDX]:
                     f.write(f'#include "{model[HPATH_IDX]}"\n\n')
 
             f.write('#include "actor.h"\n\n')

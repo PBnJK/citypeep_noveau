@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+
+<!--
+  0 = LEG..... < 32  0   0>
+  1 = LEG..... <-32  0   0>
+  2 = SKIRT... < 0  -128 0>
+  3 = SHIRT... < 0  -280 0>
+  4 = FORE1... <-80 -288 0>
+  5 = ARM1.... <-80 -224 0>
+  6 = FORE2... < 80 -288 0>, <0 2048 0>
+  7 = ARM2.... < 80 -224 0>, <0 2048 0>
+  8 = HEAD.... < 0  -400 0>
+-->
+
+<anim res="15">
+  <frame> <!-- Ground -->
+		<target idx="0">
+			<trans>32 0 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="1">
+			<trans>-32 0 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="2">
+			<trans>0 -128 0</trans>
+    </target>
+		<target idx="3">
+			<trans>0 -280 0</trans>
+		</target>
+		<target idx="4">
+      <trans>-80 -288 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="5">
+			<trans>-80 -224 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="6">
+			<trans>80 -288 0</trans>
+      <rot>0 2048 0</rot>
+		</target>
+		<target idx="7">
+      <trans>80 -224 0</trans>
+      <rot>0 2048 0</rot>
+		</target>
+		<target idx="8">
+			<trans>0 -400 0</trans>
+		</target>
+	</frame>
+
+  <frame> <!-- Walk Left -->
+		<target idx="0">
+			<trans>32 -32 32</trans>
+      <rot>512 0 0</rot>
+		</target>
+		<target idx="1">
+			<trans>-32 -32 -32</trans>
+      <rot>-512 0 0</rot>
+		</target>
+		<target idx="2">
+			<trans>0 -144 0</trans>
+    </target>
+		<target idx="3">
+			<trans>0 -296 0</trans>
+		</target>
+		<target idx="4">
+      <trans>-80 -320 16</trans>
+      <rot>512 0 0</rot>
+		</target>
+		<target idx="5">
+			<trans>-80 -264 66</trans>
+      <rot>384 0 0</rot>
+		</target>
+		<target idx="6">
+			<trans>80 -320 -16</trans>
+      <rot>-512 2048 0</rot>
+		</target>
+		<target idx="7">
+      <trans>80 -264 -66</trans>
+      <rot>-384 2048 0</rot>
+		</target>
+		<target idx="8">
+			<trans>0 -416 0</trans>
+		</target>
+  </frame>
+
+  <frame> <!-- Ground -->
+		<target idx="0">
+			<trans>32 0 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="1">
+			<trans>-32 0 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="2">
+			<trans>0 -128 0</trans>
+    </target>
+		<target idx="3">
+			<trans>0 -280 0</trans>
+		</target>
+		<target idx="4">
+      <trans>-80 -288 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="5">
+			<trans>-80 -224 0</trans>
+      <rot>0 0 0</rot>
+		</target>
+		<target idx="6">
+			<trans>80 -288 0</trans>
+      <rot>0 2048 0</rot>
+		</target>
+		<target idx="7">
+      <trans>80 -224 0</trans>
+      <rot>0 2048 0</rot>
+		</target>
+		<target idx="8">
+			<trans>0 -400 0</trans>
+		</target>
+	</frame>
+  
+  <frame> <!-- Walk Right -->
+		<target idx="0">
+			<trans>-32 -32 -32</trans>
+      <rot>-512 0 0</rot>
+		</target>
+		<target idx="1">
+			<trans>32 -32 32</trans>
+      <rot>512 0 0</rot>
+		</target>
+		<target idx="2">
+			<trans>0 -144 0</trans>
+    </target>
+		<target idx="3">
+			<trans>0 -296 0</trans>
+      </target>
+		<target idx="4">
+			<trans>80 -320 -16</trans>
+      <rot>-512 2048 0</rot>
+		</target>
+		<target idx="5">
+      <trans>80 -264 -66</trans>
+      <rot>-384 2048 0</rot>
+		</target>
+		<target idx="6">
+      <trans>-80 -320 16</trans>
+      <rot>512 0 0</rot>
+		</target>
+		<target idx="7">
+			<trans>-80 -264 66</trans>
+      <rot>384 0 0</rot>
+		</target>
+
+		<target idx="8">
+			<trans>0 -416 0</trans>
+		</target>
+  </frame>
+
+</anim>

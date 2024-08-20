@@ -2,6 +2,7 @@
 
 #include "player.h"
 #include "actor.h"
+#include "anim.h"
 #include "camera.h"
 #include "act_player_player.h"
 
@@ -44,7 +45,8 @@ void playerInit(void) {
 	act_player_player.mesh[8].trans = T_8;
 	act_player_player.mesh[8].scale = S_8;
 
-	actorLoadPtr(&act_player_player, "\\ACT\\PLAYER.TIM;1");
+	int pos = actorLoadPtr(&act_player_player, "\\ACT\\PLAYER.TIM;1");
+	animLoad("\\ANI\\WALK.ANI;1", gActors[pos].anim);
 
 	camInit(&player.camera);
 }

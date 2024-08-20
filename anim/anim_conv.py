@@ -14,12 +14,12 @@ class Action:  # lawsuit
         self.bone_index: int = index
         self.kf_type: int = 0
 
-        self.rot: list[str] = [0, 0, 0]
-        self.trans: list[str] = [0, 0, 0]
-        self.scale: list[str] = [0, 0, 0]
+        self.rot: list[int] = [0, 0, 0]
+        self.trans: list[int] = [0, 0, 0]
+        self.scale: list[int] = [0, 0, 0]
 
     @staticmethod
-    def __parse_vec(vec: str) -> int:
+    def __parse_vec(vec: str) -> list[int]:
         return [int(i) for i in vec.split(" ")]
 
     def add_rot(self, rot: str) -> None:

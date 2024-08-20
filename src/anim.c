@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "common.h"
 #include "system.h"
 #include "cp_memory.h"
 #include "anim.h"
@@ -17,6 +18,8 @@ void animLoad(const char *PATH, CP_Anim *anim) {
 
 	anim->frameNum = *data++;
 	anim->frames = memAlloc(anim->frameNum * sizeof(CP_Frame));
+
+	LOG("%d!!\n", anim->frameNum);
 
 	for( int i = 0; i < anim->frameNum; ++i ) {
 		frame = &anim->frames[i];

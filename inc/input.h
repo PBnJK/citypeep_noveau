@@ -3,8 +3,13 @@
 
 #include <sys/types.h>
 
+#include "common.h"
+
 #define PLAYER_1 0
 #define PLAYER_2 1
+
+#define PORT_1 0x00
+#define PORT_2 0x10
 
 #define PAD_P1 padData[PLAYER_1]
 #define PAD_P2 padData[PLAYER_2]
@@ -40,5 +45,7 @@ typedef struct {
 extern CP_PadData padData[2];
 
 void inputInit(void);
+
+bool inputIsPadConnected(int port);
 
 #endif // !GUARD_CITYPEEP_INPUT_H_

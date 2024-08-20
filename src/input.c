@@ -14,3 +14,7 @@ void inputInit(void) {
 	PadInitDirect((u_char *)&PAD_P1, (u_char *)&PAD_P2);
 	PadStartCom();
 }
+
+bool inputIsPadConnected(int port) {
+	return PadGetState(port) != PadStateDiscon;
+}

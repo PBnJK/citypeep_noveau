@@ -39,39 +39,39 @@ static CP_Actor act_player_player = {
 };
 
 static const SVECTOR R_0 = { 0, 0, 0 };
-static const VECTOR T_0 = { 16, 0, 0 };
+static const VECTOR T_0 = { 32, 0, 0 };
 static const VECTOR S_0 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_1 = { 0, 0, 0 };
-static const VECTOR T_1 = { -16, 0, 0 };
+static const VECTOR T_1 = { -32, 0, 0 };
 static const VECTOR S_1 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_2 = { 0, 0, 0 };
-static const VECTOR T_2 = { 0, -64, 0 };
+static const VECTOR T_2 = { 0, -128, 0 };
 static const VECTOR S_2 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_3 = { 0, 0, 0 };
-static const VECTOR T_3 = { 0, -140, 0 };
+static const VECTOR T_3 = { 0, -280, 0 };
 static const VECTOR S_3 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_4 = { 0, 0, 0 };
-static const VECTOR T_4 = { -40, -144, 0 };
+static const VECTOR T_4 = { -80, -288, 0 };
 static const VECTOR S_4 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_5 = { 0, 0, 0 };
-static const VECTOR T_5 = { -40, -112, 0 };
+static const VECTOR T_5 = { -80, -224, 0 };
 static const VECTOR S_5 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_6 = { 0, 2048, 0 };
-static const VECTOR T_6 = { 40, -144, 0 };
+static const VECTOR T_6 = { 80, -288, 0 };
 static const VECTOR S_6 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_7 = { 0, 2048, 0 };
-static const VECTOR T_7 = { 40, -112, 0 };
+static const VECTOR T_7 = { 80, -224, 0 };
 static const VECTOR S_7 = { 4096, 4096, 4096 };
 
 static const SVECTOR R_8 = { 0, 0, 0 };
-static const VECTOR T_8 = { 0, -200, 0 };
+static const VECTOR T_8 = { 0, -400, 0 };
 static const VECTOR S_8 = { 4096, 4096, 4096 };
 
 #endif // !GUARD_CITYPEEP_DATA_ACTOR_PLAYER_PLAYER_H_
